@@ -1,6 +1,7 @@
 "use client";
 
 import { diffLines, diffWords } from "diff";
+import { useEffect, useRef } from "react";
 
 const text = (v: unknown) => (v === null || v === undefined ? "" : typeof v === "string" ? v : JSON.stringify(v, null, 2));
 
@@ -9,13 +10,22 @@ export function SideBySide({ before, after, height = "28rem" }: { before: unknow
   const a = text(before);
   const b = text(after);
   const parts = a.length + b.length > 60000 ? diffLines(a, b) : diffWords(a, b);
+  const left = useRef<HTMLPreElement>(null);
+  const right = useRef<HTMLPreElement>(null);
+  // Scroll both panes to the first change, so a long prompt shows its edit at once.
+  useEffect(() => {
+    for (const el of [left.current, right.current]) {
+      const mark = el?.querySelector<HTMLElement>("[data-changed]");
+      if (el && mark) el.scrollTop = Math.max(0, mark.offsetTop - 40);
+    }
+  }, [a, b]);
   return (
     <div className="grid grid-cols-2 gap-2">
-      <pre className="pre" style={{ maxHeight: height }}>
-        {parts.map((p, i) => (p.added ? null : <span key={i} className={p.removed ? "bg-red-100 text-red-900 line-through decoration-red-300" : ""}>{p.value}</span>))}
+      <pre ref={left} className="pre relative" style={{ maxHeight: height }}>
+        {parts.map((p, i) => (p.added ? null : <span key={i} data-changed={p.removed ? "" : undefined} className={p.removed ? "bg-red-100 text-red-900 line-through decoration-red-300" : ""}>{p.value}</span>))}
       </pre>
-      <pre className="pre" style={{ maxHeight: height }}>
-        {parts.map((p, i) => (p.removed ? null : <span key={i} className={p.added ? "bg-emerald-100 text-emerald-900" : ""}>{p.value}</span>))}
+      <pre ref={right} className="pre relative" style={{ maxHeight: height }}>
+        {parts.map((p, i) => (p.removed ? null : <span key={i} data-changed={p.added ? "" : undefined} className={p.added ? "bg-emerald-100 text-emerald-900" : ""}>{p.value}</span>))}
       </pre>
     </div>
   );
