@@ -86,11 +86,21 @@ function applyLabels(rawJson: unknown, raw: FactLedger, ledgerIn: LedgerInput): 
   return { ledger, labels: Object.fromEntries(labels) };
 }
 
-function socialPick(posts: SocialPost[], platform: string): SocialPost {
-  const valid = posts.filter((p) => ["x", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest"].includes(p.platform));
+const VALID_PLATFORMS = ["x", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest"];
+
+/**
+ * Picks the platform's post. Production keeps only posts whose platform it
+ * recognises (organic-social.service.ts 971-977). When the model writes an
+ * unknown platform (for example "x (twitter)", copied from the schema), the
+ * post is still shown here, marked as dropped by production.
+ */
+function socialPick(posts: SocialPost[], platform: string): SocialPost & { dropped_by_production?: string } {
+  const valid = posts.filter((p) => VALID_PLATFORMS.includes(p.platform));
   const post = valid.find((p) => p.platform === platform) ?? valid[0];
-  if (!post) throw new Error(`the reply holds no ${platform} post`);
-  return post;
+  if (post) return post;
+  const any = posts[0];
+  if (!any) throw new Error(`the reply holds no ${platform} post`);
+  return { ...any, dropped_by_production: `The model wrote platform "${any.platform}". Production does not recognise it and would drop this post.` };
 }
 
 const fns: CodeFn[] = [
@@ -437,7 +447,8 @@ const fns: CodeFn[] = [
       const platform = String(params.platform);
       const raw = str(ctx[`social_${platform}_raw`]) ?? "";
       const post = socialPick(parseMultiPlatformResponse(raw), platform);
-      if (platform !== "facebook") return { [`social_${platform}`]: { ...post, characters: plainLength(post.content) } };
+      if (platform !== "facebook")
+        return { [`social_${platform}`]: { ...post, characters: plainLength(post.content), note: post.dropped_by_production ?? null } };
       const s = asInputs(ctx).settings;
       const content = stripEmojis(post.content);
       const count = plainLength(content);

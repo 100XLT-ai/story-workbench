@@ -64,7 +64,7 @@ export async function executeStep(step: Step, stepIndex: number, ctx: Context, l
   };
   const input = inputValues(step, ctx);
   if (!decision.run) {
-    const outputs = skippedOutputs(step);
+    const outputs = skippedOutputs(step, ctx);
     return { outputs, trace: { ...base, status: "skipped", reason: decision.reason, endedAt: new Date().toISOString(), body: { input, output: outputs } } };
   }
   if (step.kind === "code") {

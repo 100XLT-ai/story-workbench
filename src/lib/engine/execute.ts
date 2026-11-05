@@ -59,8 +59,9 @@ export function parseReply(step: PromptStep, text: string): unknown {
   return text;
 }
 
-export function skippedOutputs(step: Step): Record<string, unknown> {
-  return Object.fromEntries(step.outputs.map((o) => [o, null]));
+/** A skipped step writes null only to names that no earlier step wrote, so it never hides an earlier value. */
+export function skippedOutputs(step: Step, ctx: Context = {}): Record<string, unknown> {
+  return Object.fromEntries(step.outputs.filter((o) => ctx[o] === undefined).map((o) => [o, null]));
 }
 
 export function decideStep(step: Step, ctx: Context) {
