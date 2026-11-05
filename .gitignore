@@ -44,3 +44,6 @@ next-env.d.ts
 .workflow-data/
 .next/
 *.local.json
+
+.vercel
+.env*

@@ -1,0 +1,8 @@
+{
+  "_note": "Market name -> the masthead the writer uses (spec 2.5). Spokesman Review and WEHCO come from the longtale-core harness publisher values; the rest use the market name. The team edits this file, then runs pnpm import.",
+  "Spokesman Review": "The Spokesman-Review",
+  "WEHCO": "Arkansas Democrat-Gazette",
+  "Star Tribune": "Star Tribune",
+  "WBEZ": "WBEZ",
+  "Howard County": "Howard County"
+}

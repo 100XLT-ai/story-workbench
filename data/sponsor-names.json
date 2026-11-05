@@ -1,0 +1,12 @@
+{
+  "_note": "Sponsor aliases and program names by domain, from the STORIES list in longtale-core apps/api/scripts/story-writer-test/harness.lib.ts (136fa4ac). RUN2_STORIES uses the same values. Other domains get empty lists.",
+  "cceasternwa.org": { "aliases": ["Catholic Charities", "CCEW"], "programs": [] },
+  "numericacu.com": { "aliases": ["Numerica"], "programs": ["Numerica CARES for Kids", "Numerica Charitable Fund"] },
+  "baptist-health.org": { "aliases": [], "programs": [] },
+  "nolibrewhouse.com": { "aliases": ["No-Li"], "programs": [] },
+  "harpsfood.com": { "aliases": ["Harps"], "programs": [] },
+  "myavista.com": { "aliases": ["Avista"], "programs": ["Named Communities Investment Fund", "NCIF"] },
+  "stcu.org": { "aliases": ["Spokane Teachers Credit Union"], "programs": ["Here for Good Foundation"] },
+  "wendle.com": { "aliases": ["Wendle Ford", "Wendle"], "programs": [] },
+  "arkansasbluecross.com": { "aliases": ["Arkansas Blue Cross"], "programs": ["Blue & You Foundation for a Healthier Arkansas", "Blue & You Foundation"] }
+}

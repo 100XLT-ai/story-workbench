@@ -1,0 +1,8 @@
+[
+  {
+    "platform": "linkedin | facebook | x (twitter) | instagram",
+    "content": "markdown content string",
+    "urls": ["multiple url strings"],
+    "hashtags": ["multiple hashtag strings"]
+  }
+]
