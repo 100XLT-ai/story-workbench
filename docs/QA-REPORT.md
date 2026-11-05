@@ -35,12 +35,12 @@ After the database step, the tests marked "repeat live" must run again on
 | AC-20 | pass | 19 endpoints answer 200 with no login; `/api/openapi.json` passes `swagger-cli validate`. |
 | AC-21 | partial (local) | `claude mcp add --transport http story-workbench http://localhost:3100/mcp` → `claude mcp list`: ✓ Connected. Claude Code cannot run tools inside the build session (it refuses nested sessions, D41), so `scripts/mcp-smoke.ts ac21` ran the same calls: 16 tools, `query_stories` (total 122), `start_run` (run 2), `get_run` until done, `get_trace` (39 steps). The QA session should repeat it in Claude Code. |
 | AC-22 | pass (local) | `scripts/mcp-smoke.ts ac22`: `create_version` "Staged writer 3.5 (mcp-smoke)" (1 changed field), runs 8 and 9 on 3 stories, `compare_traces` lists the steps that differ. |
-| AC-23 | pass (local); repeat live | `initialize` and `tools/list` over plain HTTP with no header but `Accept`; `/.well-known/oauth-protected-resource` → 404 (not 401). |
+| AC-23 | pass (live) | On https://story-workbench-longtale-hq.vercel.app/mcp: `initialize` (server story-workbench), `tools/list` (16 tools) and `resources/read workbench://guide` over plain HTTP with no login; `/.well-known/oauth-protected-resource` → 404 (not 401). |
 | AC-24 | pass | No page, route or MCP tool checks a login or a token; there is no middleware. |
 | AC-25 | pass (repo, build); repeat live logs | The key value and its prefix: 0 hits in tracked files, 0 in git history, 0 in `.next`. |
 | AC-26 | pass | The runtime talks only to its own Postgres, OpenRouter and OpenRouter's model list. No longtale-core host or database string is in `src/`. |
 | AC-27 | pass | `README.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/TEAM-GUIDE.md`, `docs/SPEC.md`. |
-| AC-28 | pending | The first CI runs failed on `LayoutProps` (generated types); fixed with `next typegen` in `pnpm typecheck`. See the latest run on GitHub Actions. |
+| AC-28 | pass | GitHub Actions run for 175d852: type-check, lint, unit tests and the fidelity test pass (the first two runs failed on generated route types; fixed). |
 | AC-29 | pass (local, by the builder) | The tour clicks work: Winners, Runnable by v3, quote_count ≤ 1 → 122; Facts header; 3 rows; Run with…; Staged 3.0; flow. A first-time reader must still time it (QA). |
 | AC-30 | pass | At 1280 × 800, `scrollWidth == clientWidth` on /stories, /stories/15157, /workflows, /versions/2, /versions/2/edit, /runs, /runs/7, /flow/1, /compare, /settings, /connect. The table pages 50 rows at a time. |
 | AC-31 | pass | Ask "rank 3 or 5, no quotes" → chips `rank in [3,5]`, `quote_count eq 0`, count 403; the API with the same filter → 403. |
