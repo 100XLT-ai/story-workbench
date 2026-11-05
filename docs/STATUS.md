@@ -18,8 +18,8 @@ Updated: 2026-11-05 (build session).
    ```
    npx vercel@latest integration add neon --name story-workbench-db --scope longtale-hq
    npx vercel@latest env pull .env.vercel --scope longtale-hq
-   IMPORT_DATABASE_URL=<the DATABASE_URL from .env.vercel> pnpm db:migrate
-   IMPORT_DATABASE_URL=<same> pnpm run import
+   DATABASE_URL=<the DATABASE_URL from .env.vercel> pnpm db:migrate
+   FROM_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/story_workbench TO_DATABASE_URL=<same> bash scripts/copy-snapshot.sh
    DATABASE_URL=<same> pnpm seed
    npx vercel@latest --prod --scope longtale-hq
    ```
@@ -34,8 +34,8 @@ Updated: 2026-11-05 (build session).
 | 3 Engine and runs | done (local) | 8cee4ad | One Vercel Workflow per story; Staged 3.0 on the job 1100 winner: 39 steps, $0.105. |
 | 4 Web app | done (local) | 8cee4ad | All pages of spec §6. |
 | 5 API and MCP | done (local) | 7b79899 | REST + OpenAPI; MCP at /mcp. |
-| 6 Deploy and self-check | blocked | — | Needs the database (above). |
-| 7 Docs | in progress | — | |
+| 6 Deploy and self-check | local done; live blocked | — | Self-check on the local app: see QA-REPORT.md. Live needs the database (above). |
+| 7 Docs | done | 814eb6f | README, ARCHITECTURE, DECISIONS, TEAM-GUIDE, QA-REPORT. |
 
 ## Acceptance tests
 
@@ -44,4 +44,5 @@ See `docs/QA-REPORT.md` for the evidence of each test.
 ## Model spend so far
 
 - Goldens recording (longtale-core requests, once): about $1.10.
-- App runs: see Settings → Model spend (local database).
+- App runs and prompt-editor calls in the local self-check: about $2.89 (Settings → Model spend).
+- Total so far: about $4.00.

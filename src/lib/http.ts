@@ -15,6 +15,8 @@ export function json(data: unknown, status = 200, headers: Record<string, string
 
 export function fail(e: unknown) {
   const message = e instanceof Error ? e.message : String(e);
+  if (/DATABASE_URL is not set|ECONNREFUSED|getaddrinfo/.test(message))
+    return json({ error: "The app's database is not connected yet. See docs/STATUS.md in the repo (Needs a person).", detail: message }, 503);
   if (e instanceof VersionError) return json({ error: message, issues: e.issues }, 422);
   if (e instanceof BadRequest || e instanceof FilterError || e instanceof SyntaxError) return json({ error: message }, 400);
   if (e instanceof NotFound) return json({ error: message }, 404);

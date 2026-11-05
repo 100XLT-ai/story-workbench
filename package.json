@@ -9,7 +9,7 @@
     "lint": "eslint",
     "import": "tsx scripts/import-snapshot.ts",
     "seed": "tsx scripts/seed-versions.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "db:migrate": "drizzle-kit migrate",
     "goldens": "tsx scripts/make-goldens.ts"
