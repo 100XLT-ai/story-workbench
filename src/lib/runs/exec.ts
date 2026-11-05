@@ -93,7 +93,7 @@ export async function advance(runStoryId: number): Promise<Advance> {
     return { action: "done" };
   }
   let cursor = rs.cursor;
-  let costAdd = 0;
+  const costAdd = 0;
   while (cursor < def.steps.length) {
     const step = def.steps[cursor];
     if (step.kind === "prompt") {

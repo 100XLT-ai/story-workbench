@@ -70,13 +70,14 @@ function one(name: string, v: unknown): string | null {
     const lines = (s: unknown) => (typeof s === "string" && s.trim() && s.trim() !== "(none)" ? s.trim().split("\n").length : 0);
     return `${lines(v.facts)} fact lines, ${lines(v.company)} company lines, ${lines(v.quotes)} quotes; ${cut(v.thin, 60)}`;
   }
+  if (name === "label_input" && isObj(v)) return null;
   if (name === "modules") return `${len(v)} characters of story-type rules`;
   if (name === "selection" && isObj(v)) {
     const use = Array.isArray(v.use_facts) ? v.use_facts.length : 0;
     const out = Array.isArray(v.left_out) ? v.left_out.length : 0;
     return `Angle: "${cut(v.angle, 80)}"; uses ${use} facts, leaves out ${out}`;
   }
-  if (name === "writer_raw" && isObj(v)) return `Wrote ${Array.isArray(v.articles) ? v.articles.length : 0} options`;
+  if (name === "writer_raw" && isObj(v)) return `Wrote a plan and ${Array.isArray(v.options) ? v.options.length : 0} options`;
   if (name === "writer_output" && isObj(v)) {
     const opts = Array.isArray(v.options) ? (v.options as { option: string; headline: string; body: string }[]) : [];
     return opts.map((o) => `${o.option}: "${cut(o.headline, 50)}" (${words(o.body)} words)`).join(" · ");
