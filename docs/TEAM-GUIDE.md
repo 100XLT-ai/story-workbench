@@ -35,7 +35,9 @@ one flow.
    right says how many stories match (122).
    - You can also type "winners runnable by v3 with one quote or none" in the
      **Ask** box and click **Ask**. The chips appear the same way, and you can edit them.
-5. Tick the boxes of the first 3 rows.
+5. Click the **Facts** column header once. The stories with the most facts come
+   first. (A story with no facts often makes the writer refuse; the run then
+   shows the failing step.) Tick the boxes of the first 3 rows.
 6. Click **Run with… (3 selected)**.
 7. In **Version**, choose **Staged writer 3.0 (seed)**. Read the estimated cost
    (about $0.10 per story). Click **Start the run**.

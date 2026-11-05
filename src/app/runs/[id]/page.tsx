@@ -169,10 +169,10 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
                   )}
                 </td>
                 <td className="max-w-[340px]">
-                  {Object.keys(s.summary?.social ?? {}).length ? (
+                  {Object.values(s.summary?.social ?? {}).some(Boolean) ? (
                     <div className="space-y-1">
                       {[...PLATFORMS, ...Object.keys(s.summary?.social ?? {}).filter((k) => !PLATFORMS.includes(k))].map((p) =>
-                        s.summary?.social && p in s.summary.social ? (
+                        s.summary?.social?.[p] ? (
                           <div key={p} className="flex gap-1.5">
                             <span className="w-14 shrink-0 text-[11px] font-semibold uppercase text-stone-500">{p}</span>
                             <Post p={p} post={s.summary.social[p]} />

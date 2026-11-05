@@ -12,7 +12,7 @@ const id = (name: string, d: string) => ({ name, in: "path", required: true, des
 const ok = (d: string) => ({ "200": { description: d, content: { "application/json": { schema: { type: "object" } } } } });
 const jsonBody = (props: Record<string, unknown>, required: string[] = []) => ({
   required: true,
-  content: { "application/json": { schema: { type: "object", properties: props, required } } },
+  content: { "application/json": { schema: { type: "object", properties: props, ...(required.length ? { required } : {}) } } },
 });
 const Filter = { type: "array", items: { type: "object", properties: { field: { type: "string" }, op: { type: "string", enum: ["eq", "ne", "lt", "lte", "gt", "gte", "in", "contains", "is_null", "not_null"] }, value: {} }, required: ["field", "op"] } };
 const Change = { type: "object", properties: { step_id: { type: "string" }, field: { type: "string" }, new_value: {} }, required: ["step_id", "field", "new_value"] };

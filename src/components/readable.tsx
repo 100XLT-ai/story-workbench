@@ -154,30 +154,64 @@ function Selection({ v, claims }: { v: Obj; claims: ClaimIndex }) {
 }
 
 function Plan({ plan, claims }: { plan: Obj; claims: ClaimIndex }) {
-  const options = arr(plan.options).filter(isObj);
+  // The writer returns plan.grounded / plan.upbeat ({ intro_type, paragraphs: [[claim ids]] }); older shapes use plan.options.
+  const options: Obj[] = [
+    ...["grounded", "upbeat"].filter((k) => isObj(plan[k])).map((k) => ({ option: k, ...(plan[k] as Obj) })),
+    ...arr(plan.options).filter(isObj),
+  ];
+  const known = new Set(["angle", "angles", "angle_reason", "theme", "walkaway", "why_now", "use_facts", "grounded", "upbeat", "options"]);
+  const why = isObj(plan.why_now) ? plan.why_now : null;
   return (
     <div>
-      {plan.angle !== undefined && <Row k="Angle">{str(plan.angle)}</Row>}
+      {arr(plan.angles).length > 0 && (
+        <Row k="Angles considered">
+          <ul className="list-disc pl-4">
+            {arr(plan.angles).map((a, i) => (
+              <li key={i}>{str(a)}</li>
+            ))}
+          </ul>
+        </Row>
+      )}
+      {plan.angle !== undefined && (
+        <Row k="Angle">
+          <b>{str(plan.angle)}</b>
+          {plan.angle_reason !== undefined && <div className="text-stone-600">{str(plan.angle_reason)}</div>}
+        </Row>
+      )}
       {plan.theme !== undefined && <Row k="Theme">{str(plan.theme)}</Row>}
       {plan.walkaway !== undefined && <Row k="Walkaway">{str(plan.walkaway)}</Row>}
+      {"why_now" in plan && <Row k="Why now">{why ? `${str(why.text)} (${str(why.claim_id)})` : "none"}</Row>}
+      {arr(plan.use_facts).length > 0 && (
+        <Row k="Facts to use">
+          <ClaimList ids={arr(plan.use_facts)} claims={claims} />
+        </Row>
+      )}
       {options.map((o, i) => (
-        <Row key={i} k={`${str(o.option)} plan`}>
-          <div className="text-stone-600">Intro: {str(o.intro_type)}</div>
-          <ol className="mt-1 list-decimal space-y-1 pl-5">
-            {arr(o.paragraphs).map((p, j) => (
-              <li key={j}>
-                {(isObj(p) ? arr(p.claim_ids ?? p.claims) : arr(p)).map((id) => (
-                  <span key={str(id)} className="mr-1 rounded bg-stone-100 px-1 font-mono text-xs" title={claims.get(str(id))?.text}>
-                    {str(id)}
-                  </span>
-                ))}
-                {isObj(p) && p.purpose !== undefined && <span className="text-stone-600">{str(p.purpose)}</span>}
-              </li>
-            ))}
+        <Row key={i} k={`${str(o.option)}: paragraph plan`}>
+          <div className="text-stone-600">Opening type: {str(o.intro_type)}</div>
+          <ol className="mt-1 list-decimal space-y-1.5 pl-5">
+            {arr(o.paragraphs).map((p, j) => {
+              const ids = isObj(p) ? arr(p.claim_ids ?? p.claims) : arr(p);
+              return (
+                <li key={j}>
+                  {ids.map((id) => (
+                    <div key={str(id)} className="text-sm">
+                      <span className="mr-1 rounded bg-stone-100 px-1 font-mono text-xs">{str(id)}</span>
+                      {claims.get(str(id))?.text ?? ""}
+                    </div>
+                  ))}
+                  {ids.length === 0 && <span className="text-stone-400">(no claim)</span>}
+                </li>
+              );
+            })}
           </ol>
         </Row>
       ))}
-      {options.length === 0 && <pre className="pre">{JSON.stringify(plan, null, 2)}</pre>}
+      {Object.keys(plan).filter((k) => !known.has(k)).length > 0 && (
+        <Row k="Other plan fields">
+          <span className="font-mono text-xs">{JSON.stringify(Object.fromEntries(Object.entries(plan).filter(([k]) => !known.has(k))))}</span>
+        </Row>
+      )}
     </div>
   );
 }
