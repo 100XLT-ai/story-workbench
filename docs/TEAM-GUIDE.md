@@ -181,6 +181,13 @@ plans the story and writes both options.
 
 - The **Stories** table shows the newest job first, then rank. Click a column
   header to sort by it; click **Newest job first** to go back.
+- **Scores name their system.** Four ranking systems ranked the jobs over time.
+  The **Ranking system** column says which one ranked a story, and the
+  **Ranking score** is that system's score (a weighted score, or the simple
+  points). On a story page, **Scoring: inputs and scores** shows each part:
+  the raw input (for example the date and its age), the band, the value that
+  longtale-core's own code gives, and the stored value. The **Guide → Scoring**
+  page explains each system.
 - **Old jobs have no pages.** 1,590 stories from jobs that ran before
   2026-08-17 show "old pipeline: no pages saved". The source database lost
   their page rows, so the writer has nothing to read. Click **Has source data**

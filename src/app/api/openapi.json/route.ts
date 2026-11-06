@@ -33,6 +33,7 @@ export function GET(req: Request) {
         post: { summary: "Query stories (body)", requestBody: jsonBody({ filter: Filter, sort: { type: "string" }, dir: { type: "string" }, limit: { type: "integer" }, offset: { type: "integer" } }), responses: ok("{ total, rows }") },
       },
       "/api/stories/fields": { get: { summary: "Story fields and story inputs", responses: ok("{ fields, inputs }") } },
+      "/api/scoring/systems": { get: { summary: "Each ranking system: date, commit, formula, deal-grade bounds, confidence rule and stored columns", responses: ok("{ systems }") } },
       "/api/stories/coverage": { get: { summary: "Per ranking system: stories, jobs, stories with no page, no text or an empty fact ledger", responses: ok("{ systems }") } },
       "/api/stories/ask": { post: { summary: "Turn a plain request into a filter", requestBody: jsonBody({ text: { type: "string" } }, ["text"]), responses: ok("{ filter, explanation, count }") } },
       "/api/stories/{id}": { get: { summary: "One story's fixed inputs and runs", parameters: [id("id", "Story (candidate) id")], responses: ok("story") } },

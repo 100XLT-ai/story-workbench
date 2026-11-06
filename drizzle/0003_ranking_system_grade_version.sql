@@ -1,0 +1,2 @@
+ALTER TABLE "stories" drop column "ranking_system";--> statement-breakpoint
+ALTER TABLE "stories" ADD COLUMN "ranking_system" text GENERATED ALWAYS AS (coalesce(raw ->> 'weighted_version', raw ->> 'grade_version', 'untagged')) STORED NOT NULL;

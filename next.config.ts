@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
     "/mcp": ["./docs/TEAM-GUIDE.md"],
     "/guide": ["./docs/TEAM-GUIDE.md", "./README.md"],
     "/guide/developers": ["./docs/TEAM-GUIDE.md", "./README.md"],
+    "/guide/scoring": ["./docs/SCORING.md"],
   },
 };
 

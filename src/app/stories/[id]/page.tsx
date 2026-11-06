@@ -5,6 +5,8 @@ import { NoPagesBadge } from "@/components/no-pages-badge";
 import { use, useEffect, useState } from "react";
 import { RunDialog } from "@/components/run-dialog";
 import { StoryInputPreview } from "@/components/story-input-preview";
+import { ScoringPanel } from "@/components/scoring-panel";
+import type { StoryScoring } from "@/lib/scoring/explain";
 import { api, usd } from "@/lib/client/api";
 
 type Obj = Record<string, unknown>;
@@ -33,6 +35,7 @@ interface Story {
   images: Obj[];
   runs: { runId: number; runStoryId: number; version: string; status: string; cost: number; createdAt: string }[];
   v3: { runnable: boolean; reason: string | null; recrawlUrls: string[] };
+  scoring: StoryScoring | null;
 }
 
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
@@ -80,7 +83,7 @@ function textWarning(st: Obj): string | null {
   return null;
 }
 
-function WhyRank({ st, v3 }: { st: Obj; v3: Story["v3"] }) {
+function WhyRank({ st, v3, scoring }: { st: Obj; v3: Story["v3"]; scoring?: StoryScoring | null }) {
   const parts = (st.scoreComponents ?? {}) as Obj;
   const total = n(st.total);
   const warning = textWarning(st);
@@ -111,11 +114,11 @@ function WhyRank({ st, v3 }: { st: Obj; v3: Story["v3"] }) {
         <div>
           <div className="flex items-baseline gap-4">
             <div>
-              <div className="label">Weighted score</div>
+              <div className="label" title="The score of the system that ranked the job">{scoring?.scoreLabel ?? "Ranking score"}</div>
               <div className="text-2xl font-semibold">{fmt(n(st.weightedScore))}</div>
             </div>
             <div>
-              <div className="label">Total</div>
+              <div className="label">Cause score total</div>
               <div className="text-2xl font-semibold">{fmt(total)}</div>
             </div>
             <div>
@@ -124,8 +127,13 @@ function WhyRank({ st, v3 }: { st: Obj; v3: Story["v3"] }) {
             </div>
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-sm">
-            <span className="chip">deal grade {s(st.dealGrade)}</span>
-            <span className="chip">confidence {s(st.confidence)}</span>
+            <span className="chip" title={scoring?.systems[scoring.rankedBy]?.grade?.band}>
+              deal grade {s(st.dealGrade)}
+              {scoring && st.dealGrade ? ` (${scoring.rankedBy})` : ""}
+            </span>
+            <span className="chip" title={scoring?.systems[scoring.rankedBy]?.confidence?.band}>
+              confidence {s(st.confidence)}
+            </span>
           </div>
           <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs">
             {counts.map(([label, v]) => (
@@ -263,7 +271,8 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           Run this story…
         </button>
       </div>
-      <WhyRank st={st} v3={data.v3} />
+      <WhyRank st={st} v3={data.v3} scoring={data.scoring} />
+      <ScoringPanel scoring={data.scoring} />
       <StoryInputPreview storyId={Number(id)} />
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="card p-3">

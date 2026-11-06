@@ -12,6 +12,7 @@ export interface GuideDoc {
 
 export const GUIDE_DOCS = {
   team: { file: "docs/TEAM-GUIDE.md", href: "/guide", label: "Team guide" },
+  scoring: { file: "docs/SCORING.md", href: "/guide/scoring", label: "Scoring" },
   developers: { file: "README.md", href: "/guide/developers", label: "For developers" },
 } satisfies Record<string, GuideDoc>;
 
@@ -30,6 +31,8 @@ export function readGuideDoc(doc: GuideDoc): string {
       return fs.readFileSync(path.join(process.cwd(), "docs/TEAM-GUIDE.md"), "utf8");
     case "README.md":
       return fs.readFileSync(path.join(process.cwd(), "README.md"), "utf8");
+    case "docs/SCORING.md":
+      return fs.readFileSync(path.join(process.cwd(), "docs/SCORING.md"), "utf8");
     default:
       throw new Error(`Unknown guide doc: ${doc.file}`);
   }

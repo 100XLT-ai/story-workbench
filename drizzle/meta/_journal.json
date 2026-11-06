@@ -22,6 +22,13 @@
       "when": 1793946111483,
       "tag": "0002_ranking_system",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793947859580,
+      "tag": "0003_ranking_system_grade_version",
+      "breakpoints": true
     }
   ]
 }

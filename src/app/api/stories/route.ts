@@ -4,7 +4,7 @@ import { findStories } from "@/lib/service";
 export const dynamic = "force-dynamic";
 export const OPTIONS = options;
 
-/** GET /api/stories?filter=[...]&sort=rank&dir=asc&limit=50&offset=0 */
+/** GET /api/stories?filter=[...]&sort=rank&dir=asc&limit=50&offset=0&explain=1 (explain adds each ranking system's inputs and scores per row) */
 export async function GET(req: Request) {
   try {
     const u = new URL(req.url);
@@ -16,6 +16,7 @@ export async function GET(req: Request) {
         dir: dir === "desc" ? "desc" : "asc",
         limit: num(u.searchParams.get("limit")),
         offset: num(u.searchParams.get("offset")),
+        explain: ["1", "true", "yes"].includes(u.searchParams.get("explain") ?? ""),
       }),
     );
   } catch (e) {

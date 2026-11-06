@@ -8,6 +8,7 @@ import { INPUT_DESCRIPTIONS, INPUT_ROOTS, type RunOverrides } from "./engine/inp
 import { parseFilter } from "./engine/filter";
 import { registryList } from "./engine/registry";
 import { pageTextTokens, previewVersion } from "./engine/preview";
+import { scoringFor } from "./data/scoring";
 import type { Step, VersionDefinition } from "./engine/types";
 import { parseJsonText } from "./writer/writer/writer-output";
 import { listModels } from "./models";
@@ -22,7 +23,14 @@ import { recrawlPages } from "./writer/harness";
 export { BadRequest, FilterError, VersionError };
 
 export const listStoryFields = () => ({ fields: fieldList(), inputs: INPUT_ROOTS.map((r) => ({ name: r, description: INPUT_DESCRIPTIONS[r] })) });
-export const findStories = (q: StoryQuery) => queryStories(q);
+/** The stories query; with `explain`, each row also gets each ranking system's inputs and scores (D48). */
+export async function findStories(q: StoryQuery & { explain?: boolean }) {
+  const r = await queryStories(q);
+  if (!q.explain) return r;
+  const scoring = await scoringFor(r.rows.map((x) => x.id));
+  return { ...r, rows: r.rows.map((x) => ({ ...x, scoring: scoring.get(x.id) ?? null })) };
+}
+export { SYSTEMS as scoringSystems } from "./scoring/systems";
 export { storyCoverage };
 
 export async function getStory(id: number) {
@@ -64,6 +72,7 @@ export async function getStory(id: number) {
     images: imgLinks.map((l) => ({ ...imgs.find((i) => i.id === l.imageId), rank: l.rank })),
     // why: an empty ledger is always thin, so the Staged and One-call seeds run the re-crawl; show which pages it would add.
     v3: v3Of(st, inputs),
+    scoring: (await scoringFor([id])).get(id) ?? null,
     runs: runs.map(({ rs, run, v, f }) => ({
       runId: run.id,
       runStoryId: rs.id,

@@ -1,0 +1,12 @@
+{
+ "source": "longtale-core origin/main 20e943e7 apps/api/src/api/modules/discovery/pipeline/__tests__/__golden__/job-677.golden.json (trimmed: inputs and expected values only)",
+ "meta": {
+  "jobId": "677",
+  "now": "2026-07-15T09:24:17.136Z",
+  "advertiserHost": "abhi.com",
+  "scoringVersion": "cause-score@v1",
+  "weightedScoringVersion": "weighted-grade@v1"
+ },
+ "cohortExtras": [],
+ "candidates": []
+}
