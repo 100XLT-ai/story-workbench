@@ -15,6 +15,8 @@ import { unpack } from "./runs/pack";
 import { getSetting } from "./settings";
 import { applyChanges, createVersion, diffDefinitions, familiesWithVersions, getVersion, listVersions, VersionError, type StepChange } from "./versions";
 import { decided } from "./flow/decided";
+import { v3BlockReason } from "./data/runnable";
+import { recrawlPages } from "./writer/harness";
 
 export { BadRequest, FilterError, VersionError };
 
@@ -58,6 +60,8 @@ export async function getStory(id: number) {
       })
       .filter((x) => x !== null),
     images: imgLinks.map((l) => ({ ...imgs.find((i) => i.id === l.imageId), rank: l.rank })),
+    // why: an empty ledger is always thin, so the Staged and One-call seeds run the re-crawl; show which pages it would add.
+    v3: v3Of(st, inputs),
     runs: runs.map(({ rs, run, v, f }) => ({
       runId: run.id,
       runStoryId: rs.id,
@@ -67,6 +71,15 @@ export async function getStory(id: number) {
       cost: rs.cost,
       createdAt: run.createdAt,
     })),
+  };
+}
+
+function v3Of(st: typeof schema.stories.$inferSelect, inputs: Awaited<ReturnType<typeof loadStoryInputs>>) {
+  const reason = v3BlockReason(st);
+  return {
+    runnable: st.runnableV3,
+    reason,
+    recrawlUrls: reason ? recrawlPages(inputs.story.beneficiary, inputs.other_pages).map((p) => p.url) : [],
   };
 }
 

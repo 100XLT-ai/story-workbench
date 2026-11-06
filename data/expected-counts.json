@@ -6,12 +6,14 @@
   "jobs": 308,
   "sponsor_domains": 69,
   "runnable_production": 14564,
-  "runnable_v3": 13461,
-  "winners_runnable_v3": 202,
+  "runnable_v3": 13192,
+  "winners_runnable_v3": 177,
   "has_angle": 1144,
   "rank_3_or_5_and_quote_count_lte_1": 458,
   "winners_quote_count_lte_1": 203,
-  "winners_runnable_v3_quote_count_lte_1": 122,
+  "winners_runnable_v3_quote_count_lte_1": 97,
+  "text_page_count_0": 1605,
+  "winners_text_page_count_0": 96,
   "distributions": {
     "rank": {
       "1": 308,
@@ -279,6 +281,19 @@
       "9": 1,
       "11": 2
     },
+    "text_page_count": {
+      "0": 1605,
+      "1": 12434,
+      "2": 685,
+      "3": 209,
+      "4": 45,
+      "5": 36,
+      "6": 15,
+      "7": 13,
+      "8": 6,
+      "9": 1,
+      "11": 2
+    },
     "fact_count": {
       "0": 2157,
       "1": 337,
@@ -426,8 +441,8 @@
       "true": 14564
     },
     "runnable_v3": {
-      "false": 1590,
-      "true": 13461
+      "false": 1859,
+      "true": 13192
     },
     "winner": {
       "false": 14768,

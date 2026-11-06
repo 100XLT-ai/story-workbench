@@ -30,9 +30,12 @@ one flow.
 1. Open the app. The [**Stories**](/stories) page opens. Type your name if it asks, and
    click **Save**.
 2. Under **Quick**, click **Winners**. A chip "Winner" appears.
-3. Click **Runnable by v3**. A second chip appears. (v3 needs at least one source page.)
+3. Click **Runnable by v3**. A second chip appears. (v3 needs at least one fact,
+   impact or quote from the story's own pages. A story whose page was never
+   scraped has none, so the filter hides it. The **Text pages** column shows
+   how many of a story's pages have scraped text.)
 4. Click **quote_count ≤ 1**. A third chip "Quotes ≤ 1" appears. The count on the
-   right says how many stories match (122).
+   right says how many stories match (97).
    - You can also type "winners runnable by v3 with one quote or none" in the
      **Ask** box and click **Ask**. The chips appear the same way, and you can edit them.
 5. Click the **Facts** column header once. The stories with the most facts come
