@@ -15,6 +15,16 @@ Nothing blocks the app. Two checks need a person:
 
 1. **AC-21 in Claude Code itself.** Claude Code connects to the live `/mcp` (✓ Connected), and a script ran the same tool calls. A person should type the tour request into Claude Code once (see `docs/TEAM-GUIDE.md`, "Connect Claude").
 2. **AC-29 timing.** A first-time reader should do the 5-minute tour and time it.
+3. **Two leftover folders.** `C:\dev\a-empath-ai\story-workbench-guide` and `C:\dev\a-empath-ai\story-workbench-rankfix` are no longer git worktrees (both branches are merged and deleted), but Windows did not let `git worktree remove` delete the folders. Everything in them is in git. Delete them by hand.
+
+## Changes after the self-check
+
+| Date | Commit | Change |
+|---|---|---|
+| 2026-11-06 | 21a1448 | Merged `feat/guide-page`: the /guide page (team guide and README), a nav link and a "New here?" line on Stories. |
+| 2026-11-06 | 19366a6 | Merged `fix/runnable-and-rank-why`: `runnable_v3` now means the story's fact ledger is not empty (D42); "Why this rank" on the story page; a Text pages column and six score-part columns. Migration 0001 ran on Neon before the push. |
+
+After D42 the counts changed: "Runnable by v3" gives 13,192 (was 13,461), and the tour filter (winners, runnable by v3, quote_count ≤ 1) gives 97 (was 122). Checked on the live URL on 2026-11-06. The QA report's AC-29 row shows the old count of 122. The Neon `settings` table has no saved rows, so the code defaults (including the new Ask-box rules) apply.
 
 ## How the database was set up (done 2026-11-06)
 
