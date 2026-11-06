@@ -100,7 +100,9 @@ export async function versionCreate(body: {
 
 /** Validates a definition without saving it (the editor's save dialog). */
 export async function versionPreview(body: { parent_id: number; definition: unknown }) {
-  const parent = await getVersion(body.parent_id);
+  if (!Number.isInteger(Number(body.parent_id))) throw new BadRequest("parent_id is needed.");
+  if (!body.definition || typeof body.definition !== "object") throw new BadRequest("definition is needed.");
+  const parent = await getVersion(Number(body.parent_id));
   if (!parent) throw new VersionError(`version ${body.parent_id} does not exist`);
   const def = body.definition as VersionDefinition;
   return { issues: validateVersion(def), diff: diffDefinitions(parent.definition, def) };

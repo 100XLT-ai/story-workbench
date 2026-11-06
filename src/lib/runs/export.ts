@@ -11,9 +11,11 @@ function csvCell(v: unknown): string {
 type Run = NonNullable<Awaited<ReturnType<typeof getRun>>>;
 
 export function runCsv(run: Run): string {
+  // Social outputs of added steps (summary.ts keys them by name after "social_").
+  const extra = [...new Set(run.stories.flatMap((s) => Object.keys((s.summary as StorySummary | null)?.social ?? {})))].filter((k) => !PLATFORMS.includes(k));
   const head = [
     "story_id", "status", "sponsor", "story_headline", "article_title", "article_subtitle", "word_count", "article_content",
-    ...PLATFORMS.map((p) => `${p}_post`), "ad_headline", "ad_subheadline", "ad_cta", "check_blockers", "check_flags",
+    ...PLATFORMS.map((p) => `${p}_post`), ...extra.map((k) => `social_${k}`), "ad_headline", "ad_subheadline", "ad_cta", "check_blockers", "check_flags",
     "failed_step", "error", "cost_usd", "seconds",
   ];
   const lines = [head.join(",")];
@@ -23,6 +25,7 @@ export function runCsv(run: Run): string {
       [
         s.storyId, s.status, s.sponsor, s.headline, sum?.article?.title, sum?.article?.subtitle, sum?.article?.word_count, sum?.article?.content,
         ...PLATFORMS.map((p) => sum?.social?.[p]?.content ?? ""),
+        ...extra.map((k) => sum?.social?.[k]?.content ?? ""),
         sum?.ad?.headline, sum?.ad?.subheadline, sum?.ad?.cta,
         sum?.checks?.map((c) => `${c.option}:${c.blockers}`).join(" "),
         sum?.checks?.map((c) => `${c.option}: ${c.flags.join("; ")}`).join(" | "),

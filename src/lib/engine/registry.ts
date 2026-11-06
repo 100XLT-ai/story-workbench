@@ -336,7 +336,17 @@ const fns: CodeFn[] = [
     outputs: ["writer_output", "article_markdown", "article_parts"],
     params: { type: "object", properties: { option: { type: "string", enum: ["grounded", "upbeat"], default: "grounded" } } },
     run: (ctx, params) => {
-      const out = parseWriterOutput(ctx.writer_raw);
+      let out: ReturnType<typeof parseWriterOutput>;
+      try {
+        out = parseWriterOutput(ctx.writer_raw);
+      } catch (e) {
+        // The ported parser only says "no article body". When the writer refused,
+        // its own short_reason says why, so the run table can show it.
+        const raw = ctx.writer_raw;
+        const why = raw && typeof raw === "object" && "short_reason" in raw ? String((raw as { short_reason: unknown }).short_reason ?? "") : "";
+        const message = e instanceof Error ? e.message : String(e);
+        throw new Error(why ? `${message}. The writer said: ${why}` : message);
+      }
       const want = params.option === "upbeat" ? "upbeat" : "grounded";
       const chosen = out.options.find((o) => o.option === want) ?? out.options[0];
       return {
