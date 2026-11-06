@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { api, usd } from "@/lib/client/api";
 import { authorName } from "@/lib/client/name";
 import type { FilterClause } from "@/lib/engine/types";
+import { InputPreview } from "./input-preview";
 
 interface VersionRow {
   id: number;
@@ -31,6 +32,7 @@ export function RunDialog({ storyIds, filter, count, onClose, defaultVersion }: 
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewStory, setPreviewStory] = useState<number | null>(storyIds?.[0] ?? null);
 
   useEffect(() => {
     api<{ versions: VersionRow[] }>("/api/versions").then((r) => {
@@ -65,7 +67,7 @@ export function RunDialog({ storyIds, filter, count, onClose, defaultVersion }: 
   const tooMany = count > 500;
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onClick={onClose}>
-      <div className="card max-h-[90vh] w-[640px] overflow-auto p-5" onClick={(e) => e.stopPropagation()}>
+      <div className="card max-h-[90vh] w-[min(880px,95vw)] overflow-auto p-5" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-base font-semibold">Run {count} {count === 1 ? "story" : "stories"}</h2>
         <p className="mt-1 text-sm text-stone-600">The run works on the server. You can close this page; it goes on.</p>
         <label className="label mt-4 block">Version</label>
@@ -105,6 +107,23 @@ export function RunDialog({ storyIds, filter, count, onClose, defaultVersion }: 
             <span className="text-stone-500">Computing the estimate…</span>
           )}
         </div>
+        {storyIds?.length ? (
+          <div className="mt-3 rounded-md border border-stone-200 p-3">
+            <div className="mb-2 flex items-center gap-2 text-sm">
+              <span className="label">What each prompt receives</span>
+              {storyIds.length > 1 && (
+                <select className="input py-0.5 text-xs" value={previewStory ?? ""} onChange={(e) => setPreviewStory(Number(e.target.value))} aria-label="Story to preview">
+                  {storyIds.slice(0, 100).map((id) => (
+                    <option key={id} value={id}>
+                      story {id}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <InputPreview key={`${versionId}-${previewStory}-${date}`} versionId={versionId} storyId={previewStory} generationDate={date || undefined} compact />
+          </div>
+        ) : null}
         {tooMany && <p className="mt-3 text-sm text-red-700">A run holds 1 to 500 stories. Narrow the filter or select rows.</p>}
         {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
         <div className="mt-4 flex justify-end gap-2">

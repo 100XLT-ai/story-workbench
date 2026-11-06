@@ -7,6 +7,7 @@ import { callOpenRouter, validateVersion } from "./engine/execute";
 import { INPUT_DESCRIPTIONS, INPUT_ROOTS, type RunOverrides } from "./engine/inputs";
 import { parseFilter } from "./engine/filter";
 import { registryList } from "./engine/registry";
+import { pageTextTokens, previewVersion } from "./engine/preview";
 import type { Step, VersionDefinition } from "./engine/types";
 import { parseJsonText } from "./writer/writer/writer-output";
 import { listModels } from "./models";
@@ -393,4 +394,34 @@ export async function runStoryFor(runId: number, storyId: number): Promise<numbe
 
 export function stepsOf(def: VersionDefinition): Step[] {
   return def.steps;
+}
+
+// ---------------------------------------------------------------- input preview (no model call)
+
+/** What every step of a version receives for one story. No model call, no cost. */
+export async function previewInputs(body: { version_id?: number; definition?: unknown; story_id: number; overrides?: RunOverrides }) {
+  const storyId = Number(body.story_id);
+  if (!Number.isInteger(storyId)) throw new BadRequest("story_id is needed.");
+  let def: VersionDefinition;
+  let label: string | null = null;
+  if (body.definition && typeof body.definition === "object") def = body.definition as VersionDefinition;
+  else {
+    const v = await getVersion(Number(body.version_id));
+    if (!v) throw new BadRequest(`version ${body.version_id} does not exist`);
+    def = v.definition;
+    label = v.label;
+  }
+  const inputs = await loadStoryInputs(storyId, def.settings, body.overrides ?? {});
+  const steps = previewVersion(def, inputs as unknown as Record<string, unknown>);
+  const prompts = steps.filter((s) => s.kind === "prompt" && s.messages);
+  return {
+    version: label,
+    story_id: storyId,
+    steps,
+    model_steps: steps.filter((s) => s.kind === "prompt").length,
+    tokens_known: prompts.filter((s) => s.status === "ready").reduce((t, s) => t + (s.tokens ?? 0), 0),
+    tokens_all_rendered: prompts.reduce((t, s) => t + (s.tokens ?? 0), 0),
+    page_text_tokens: pageTextTokens(def),
+    note: "Tokens are estimates (about 4 characters per token) for the rendered text only. A slot ⟦…⟧ stands for a model output that a run makes; its real size is not counted.",
+  };
 }

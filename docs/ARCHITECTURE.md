@@ -33,7 +33,7 @@ flowchart LR
 | `src/workflows/story.ts` | The Vercel Workflow: `storyWorkflow(runStoryId)`. |
 | `src/lib/service.ts` | One service layer for the web app, the REST routes and the MCP tools. |
 | `src/app/api/**` | REST routes and `/api/openapi.json`. |
-| `src/app/mcp/route.ts` | The MCP server (16 tools and the `workbench://guide` resource). |
+| `src/app/mcp/route.ts` | The MCP server (17 tools and the `workbench://guide` resource). |
 | `src/app/**/page.tsx` | The pages of spec §6. |
 | `scripts/` | Import, seeds, goldens, fixture inputs, the MCP smoke test. |
 | `test/` | Engine unit tests and the fidelity test with its goldens. |

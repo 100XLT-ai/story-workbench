@@ -89,6 +89,19 @@ one**, and write a prompt that reads `{{article.title}}` and
 To compare two runs of the same story (for example 3.0 and 3.1), open a flow and
 click a version under **Compare with**. Changed text is marked red and green.
 
+## See what each prompt receives (free)
+
+On a story page, under **What each prompt receives**, choose a version and click
+**Preview inputs**. The Run dialog has the same button for the selected stories.
+No model is called and nothing is charged.
+
+- Each step shows its model, its thinking level, its maximum tokens and an
+  estimate of its input tokens. Click a step to read its full messages.
+- A blue ⟦slot⟧ stands for a value that a model makes during a real run, for
+  example ⟦selection: from step 11 "Choose the story"⟧.
+- The line at the top says whether any prompt reads the raw page text. No seed
+  does: the writer reads the fact ledger only.
+
 ## Downloads
 
 On a run page: **CSV** (one row per story), **Markdown** (one section per

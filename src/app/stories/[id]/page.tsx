@@ -4,6 +4,7 @@ import Link from "next/link";
 import { NoPagesBadge } from "@/components/no-pages-badge";
 import { use, useEffect, useState } from "react";
 import { RunDialog } from "@/components/run-dialog";
+import { StoryInputPreview } from "@/components/story-input-preview";
 import { api, usd } from "@/lib/client/api";
 
 type Obj = Record<string, unknown>;
@@ -39,11 +40,11 @@ const s = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : t
 
 function KV({ data, keys }: { data: Obj; keys: [string, string][] }) {
   return (
-    <dl className="grid grid-cols-[170px_1fr] gap-x-3 gap-y-1 text-sm">
+    <dl className="grid grid-cols-[170px_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
       {keys.map(([k, label]) => (
         <div key={k} className="contents">
           <dt className="text-stone-500">{label}</dt>
-          <dd className="break-words">{s(data[k])}</dd>
+          <dd className="[overflow-wrap:anywhere]">{s(data[k])}</dd>
         </div>
       ))}
     </dl>
@@ -263,6 +264,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         </button>
       </div>
       <WhyRank st={st} v3={data.v3} />
+      <StoryInputPreview storyId={Number(id)} />
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="card p-3">
           <h2 className="mb-2 font-semibold">Sponsor settings (the writer&apos;s inputs)</h2>

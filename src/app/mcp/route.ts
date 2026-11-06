@@ -13,6 +13,7 @@ import {
   listStoryFields,
   proposeEdit,
   registry,
+  previewInputs,
   runEstimate,
   runStart,
   runStoryFor,
@@ -133,6 +134,11 @@ const handler = createMcpHandler(
       "propose_edit",
       { title: "Ask the prompt editor", description: "Sends a comment (for example 'Headlines must be 8 words or fewer') to the prompt editor model. Returns proposed changes, a reason and a diff. Nothing is saved; call create_version with the changes to save them.", inputSchema: z.object({ version_id: z.number().int(), step_id: z.string().optional(), comment: z.string(), run_story_id: z.number().int().optional().describe("A trace that shows the problem.") }) },
       async (a) => wrap(() => proposeEdit({ version_id: a.version_id, step_id: a.step_id, comment: a.comment, trace: a.run_story_id ? { run_story_id: a.run_story_id } : null })),
+    );
+    server.registerTool(
+      "preview_inputs",
+      { title: "Preview the inputs", description: "Free, no model call: every step's full rendered messages for a version and a story, with a token estimate. A value that a model step makes shows as a named slot.", inputSchema: z.object({ version_id: z.number().int(), story_id: z.number().int(), generation_date: z.string().optional() }) },
+      async (a) => wrap(() => previewInputs({ version_id: a.version_id, story_id: a.story_id, overrides: a.generation_date ? { generation_date: a.generation_date } : undefined })),
     );
     server.registerTool(
       "estimate_run",
