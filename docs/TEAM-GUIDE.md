@@ -27,7 +27,7 @@ version and run you make stores that name.
 Goal: run the staged writer on 3 winners that have one quote or none, and open
 one flow.
 
-1. Open the app. The **Stories** page opens. Type your name if it asks, and
+1. Open the app. The [**Stories**](/stories) page opens. Type your name if it asks, and
    click **Save**.
 2. Under **Quick**, click **Winners**. A chip "Winner" appears.
 3. Click **Runnable by v3**. A second chip appears. (v3 needs at least one source page.)
@@ -61,7 +61,7 @@ one flow.
 
 Three ways to make a version:
 
-1. **Edit.** Open **Workflows**, click **Edit** next to a version. Choose a step
+1. **Edit.** Open [**Workflows**](/workflows), click **Edit** next to a version. Choose a step
    on the left. Change the prompt, the model, the temperature, the reasoning,
    the `when` condition, or the step order. Click a token under the prompt to
    insert it, for example `{{article.title}}`. A red token is unknown, and the
@@ -93,7 +93,7 @@ story) and **JSON** (every trace).
 
 ## Connect Claude
 
-The **Connect Claude** page has the copy-ready text. In short:
+The [**Connect Claude**](/connect) page has the copy-ready text. In short:
 
 - **Claude Code:** `claude mcp add --transport http story-workbench https://story-workbench-longtale-hq.vercel.app/mcp`
 - **Claude Desktop and claude.ai:** Settings → Connectors → Add custom connector,
@@ -166,7 +166,7 @@ plans the story and writes both options.
 - The **angle** that discovery wrote is not read by any seed. The story page
   and the flow show it, marked "not read by this version". Add
   `{{story.storyAngle}}` to a prompt to use it.
-- **Settings** holds the prompt editor's prompt and model, the Ask box prompt,
+- [**Settings**](/settings) holds the prompt editor's prompt and model, the Ask box prompt,
   the run concurrency (8) and the database and workflow usage.
 - The API is open and the OpenRouter credit has no limit. Anyone with the URL
   can start runs. The owner accepted this.
