@@ -81,6 +81,8 @@ export const stories = pgTable(
     scoreAmount: doublePrecision("score_amount").generatedAlwaysAs(sql`(score_components ->> 'amount')::double precision`),
     scoreRecency: doublePrecision("score_recency").generatedAlwaysAs(sql`(score_components ->> 'recency')::double precision`),
     scoreAttendance: doublePrecision("score_attendance").generatedAlwaysAs(sql`(score_components ->> 'attendance')::double precision`),
+    /** The ranking system that ordered the job (raw.weighted_version), or "untagged" (DECISIONS D46). */
+    rankingSystem: text("ranking_system").notNull().generatedAlwaysAs(sql`coalesce(raw ->> 'weighted_version', 'untagged')`),
     storyHeadline: text("story_headline"),
     storyAngle: text("story_angle"),
     description: text("description"),

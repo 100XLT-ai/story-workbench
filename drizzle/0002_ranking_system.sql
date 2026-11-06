@@ -1,0 +1,1 @@
+ALTER TABLE "stories" ADD COLUMN "ranking_system" text GENERATED ALWAYS AS (coalesce(raw ->> 'weighted_version', 'untagged')) STORED NOT NULL;

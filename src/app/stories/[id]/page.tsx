@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NoPagesBadge } from "@/components/no-pages-badge";
 import { use, useEffect, useState } from "react";
 import { RunDialog } from "@/components/run-dialog";
 import { api, usd } from "@/lib/client/api";
@@ -71,7 +72,8 @@ const fmt = (v: number | null) => (v === null ? "—" : Number.isInteger(v) ? St
 
 /** The page-text warning, or null. */
 function textWarning(st: Obj): string | null {
-  if (n(st.pageCount) === 0) return "This story has no page, so the writer has no source text.";
+  if (n(st.pageCount) === 0)
+    return `This story has no saved page, so the writer has no source text. Its job ran on ${String(st.runDate ?? "").slice(0, 10)}, before 2026-08-17: the source database deleted the page rows of those jobs (DECISIONS D44).`;
   if (n(st.textPageCount) === 0)
     return n(st.pageCount) === 1 ? "This story's page was never scraped, so the writer has no source text." : "This story's pages were never scraped, so the writer has no source text.";
   return null;
@@ -251,6 +253,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           <div className="mt-1 flex flex-wrap gap-2 text-sm">
             <span className="chip">rank {s(st.rank)}</span>
             {st.winner ? <span className="chip border-emerald-300 bg-emerald-50">winner</span> : null}
+            {n(st.pageCount) === 0 ? <NoPagesBadge /> : null}
             <span className="chip">{st.runnableProduction ? "runnable by Production" : "not runnable by Production"}</span>
             <span className={`chip ${data.v3.runnable ? "" : "border-amber-300 bg-amber-50"}`}>{data.v3.runnable ? "runnable by v3" : `not runnable by v3: ${data.v3.reason ?? "its ledger is empty"}`}</span>
           </div>

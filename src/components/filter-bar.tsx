@@ -178,6 +178,9 @@ export function FilterBar({ fields, filter, onChange, count }: { fields: Field[]
         </button>
         <span className="mx-2 h-5 w-px bg-stone-200" />
         <span className="label">Quick</span>
+        <button className="btn btn-sm" title="The story has at least one saved page (page_count > 0). Old jobs lost their pages: see the coverage panel." onClick={() => onChange([...filter, { field: "page_count", op: "gt", value: 0 }])}>
+          Has source data
+        </button>
         <button className="btn btn-sm" onClick={() => onChange([...filter, { field: "winner", op: "eq", value: true }])}>
           Winners
         </button>

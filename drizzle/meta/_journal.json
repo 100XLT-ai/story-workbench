@@ -15,6 +15,13 @@
       "when": 1793944050112,
       "tag": "0001_runnable_v3_ledger_and_score_parts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793946111483,
+      "tag": "0002_ranking_system",
+      "breakpoints": true
     }
   ]
 }

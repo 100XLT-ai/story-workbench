@@ -166,6 +166,13 @@ plans the story and writes both options.
 
 ## Good to know
 
+- The **Stories** table shows the newest job first, then rank. Click a column
+  header to sort by it; click **Newest job first** to go back.
+- **Old jobs have no pages.** 1,590 stories from jobs that ran before
+  2026-08-17 show "old pipeline: no pages saved". The source database lost
+  their page rows, so the writer has nothing to read. Click **Has source data**
+  under **Quick** to hide them. The **Data coverage** panel above the filter
+  counts them for each ranking system.
 - The **angle** that discovery wrote is not read by any seed. The story page
   and the flow show it, marked "not read by this version". Add
   `{{story.storyAngle}}` to a prompt to use it.

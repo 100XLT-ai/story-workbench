@@ -1,7 +1,7 @@
 // One service layer for the web app, the REST API and the MCP server.
 import { and, asc, desc, eq, inArray, sql as dsql } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { fieldList, queryStories, storyIdsFor, FilterError, type StoryQuery } from "./data/stories";
+import { fieldList, queryStories, storyCoverage, storyIdsFor, FilterError, type StoryQuery } from "./data/stories";
 import { loadStoryInputs } from "./data/story-inputs";
 import { callOpenRouter, validateVersion } from "./engine/execute";
 import { INPUT_DESCRIPTIONS, INPUT_ROOTS, type RunOverrides } from "./engine/inputs";
@@ -22,6 +22,7 @@ export { BadRequest, FilterError, VersionError };
 
 export const listStoryFields = () => ({ fields: fieldList(), inputs: INPUT_ROOTS.map((r) => ({ name: r, description: INPUT_DESCRIPTIONS[r] })) });
 export const findStories = (q: StoryQuery) => queryStories(q);
+export { storyCoverage };
 
 export async function getStory(id: number) {
   const d = db();

@@ -46,6 +46,7 @@ export const STORY_FIELDS: StoryField[] = [
   { name: "score_amount", label: "Score: amount", type: "number", group: "ranking", description: "Score part from score_components.amount.", column: c.scoreAmount },
   { name: "score_recency", label: "Score: recency", type: "number", group: "ranking", description: "Score part from score_components.recency.", column: c.scoreRecency },
   { name: "score_attendance", label: "Score: attendance", type: "number", group: "ranking", description: "Score part from score_components.attendance.", column: c.scoreAttendance },
+  { name: "ranking_system", label: "Ranking system", type: "text", group: "ranking", description: "The system that ranked the job: raw.weighted_version (weighted-grade@v1, weighted-grade@v2, simple-score@v1), or \"untagged\" for older jobs.", column: c.rankingSystem },
   { name: "deal_grade", label: "Deal grade", type: "text", group: "ranking", description: "Discovery's deal grade.", column: c.dealGrade },
   { name: "confidence", label: "Confidence", type: "text", group: "ranking", description: "Discovery's confidence.", column: c.confidence },
   { name: "tiebreak_reasoning", label: "Tiebreak reasoning", type: "text", group: "ranking", description: "Why the tiebreak chose the winner.", column: c.tiebreakReasoning },
@@ -119,6 +120,12 @@ export function whereFor(filter: FilterClause[]): SQL | undefined {
 
 const { raw: _raw, scoreComponents: _sc, ...listColumns } = getTableColumns(schema.stories);
 
+/**
+ * The default order: the newest job first, then rank (DECISIONS D45). Ordering by id put the
+ * oldest jobs first, and most of them have no saved pages.
+ */
+const DEFAULT_ORDER: SQL[] = [dsql`${c.runDate} desc nulls last`, desc(c.jobId), dsql`${c.rank} asc nulls last`, asc(c.id)];
+
 export interface StoryQuery {
   filter?: unknown;
   sort?: string;
@@ -132,9 +139,9 @@ export async function queryStories(q: StoryQuery) {
   const filter = parseFilter(q.filter);
   let where = whereFor(filter);
   if (q.ids?.length) where = and(where, inArray(c.id, q.ids));
-  const sortField = q.sort ? FIELD_BY_NAME.get(q.sort) : FIELD_BY_NAME.get("id");
-  if (q.sort && !sortField) throw new FilterError(`Unknown sort field "${q.sort}".`);
-  const order = q.dir === "desc" ? desc(sortField!.column) : asc(sortField!.column);
+  const sortField = q.sort && q.sort !== "default" ? FIELD_BY_NAME.get(q.sort) : undefined;
+  if (q.sort && q.sort !== "default" && !sortField) throw new FilterError(`Unknown sort field "${q.sort}".`);
+  const order = sortField ? [dsql`${q.dir === "desc" ? desc(sortField.column) : asc(sortField.column)} nulls last`, asc(c.id)] : DEFAULT_ORDER;
   const limit = Math.max(1, Math.min(q.limit ?? 50, 1000));
   const offset = Math.max(0, q.offset ?? 0);
   const [rows, [{ total }]] = await Promise.all([
@@ -142,7 +149,7 @@ export async function queryStories(q: StoryQuery) {
       .select(listColumns)
       .from(c)
       .where(where)
-      .orderBy(dsql`${order} nulls last`, asc(c.id))
+      .orderBy(...order)
       .limit(limit)
       .offset(offset),
     db().select({ total: dsql<number>`count(*)::int` }).from(c).where(where),
@@ -152,10 +159,29 @@ export async function queryStories(q: StoryQuery) {
 
 export async function storyIdsFor(filter: unknown, max = 500): Promise<number[]> {
   const where = whereFor(parseFilter(filter));
-  const rows = await db().select({ id: c.id }).from(c).where(where).orderBy(asc(c.id)).limit(max + 1);
+  const rows = await db().select({ id: c.id }).from(c).where(where).orderBy(...DEFAULT_ORDER).limit(max + 1);
   return rows.map((r) => r.id);
 }
 
 export function fieldList() {
   return STORY_FIELDS.map(({ column: _c, ...rest }) => rest);
+}
+
+/** Per ranking system: how many stories and jobs, and how many have no page or an empty fact ledger. */
+export async function storyCoverage() {
+  const rows = await db()
+    .select({
+      rankingSystem: c.rankingSystem,
+      stories: dsql<number>`count(*)::int`,
+      jobs: dsql<number>`count(distinct ${c.jobId})::int`,
+      noPage: dsql<number>`(count(*) filter (where ${c.pageCount} = 0))::int`,
+      noText: dsql<number>`(count(*) filter (where ${c.pageCount} > 0 and ${c.textPageCount} = 0))::int`,
+      emptyLedger: dsql<number>`(count(*) filter (where ${c.factCount} + ${c.impactCount} + ${c.quoteCount} = 0))::int`,
+      firstRun: dsql<string>`to_char(min(${c.runDate}), 'YYYY-MM-DD')`,
+      lastRun: dsql<string>`to_char(max(${c.runDate}), 'YYYY-MM-DD')`,
+    })
+    .from(c)
+    .groupBy(c.rankingSystem)
+    .orderBy(dsql`min(${c.runDate})`);
+  return { systems: rows };
 }

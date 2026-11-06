@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { FilterBar, type Field } from "@/components/filter-bar";
+import { NoPagesBadge } from "@/components/no-pages-badge";
 import { RunDialog } from "@/components/run-dialog";
 import { api } from "@/lib/client/api";
 import type { FilterClause } from "@/lib/engine/types";
@@ -38,6 +39,71 @@ function cell(v: unknown, type: Field["type"] | undefined) {
   return s.length > 90 ? `${s.slice(0, 89)}…` : s;
 }
 
+interface Coverage {
+  rankingSystem: string;
+  stories: number;
+  jobs: number;
+  noPage: number;
+  noText: number;
+  emptyLedger: number;
+  firstRun: string;
+  lastRun: string;
+}
+
+/** Per ranking system: how much source data the stories have. */
+function CoveragePanel() {
+  const [rows, setRows] = useState<Coverage[] | null>(null);
+  useEffect(() => {
+    api<{ systems: Coverage[] }>("/api/stories/coverage")
+      .then((r) => setRows(r.systems))
+      .catch(() => setRows([]));
+  }, []);
+  if (!rows?.length) return null;
+  const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "—");
+  return (
+    <details className="card p-3 text-sm">
+      <summary className="cursor-pointer font-medium">
+        Data coverage: {rows.reduce((t, r) => t + r.noPage, 0).toLocaleString()} stories have no saved page
+      </summary>
+      <p className="mt-2 text-xs text-stone-600">
+        Jobs that ran before 2026-08-17 lost their page rows in the source database, so those stories have no source text and an empty fact ledger. Use the &quot;Has source data&quot; chip to hide them.
+      </p>
+      <table className="tbl mt-2">
+        <thead>
+          <tr>
+            <th>Ranking system</th>
+            <th>Job run dates</th>
+            <th>Jobs</th>
+            <th>Stories</th>
+            <th>No page</th>
+            <th>Pages, no text</th>
+            <th>Empty fact ledger</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.rankingSystem}>
+              <td className="font-mono text-xs">{r.rankingSystem}</td>
+              <td className="whitespace-nowrap">
+                {r.firstRun} to {r.lastRun}
+              </td>
+              <td>{r.jobs.toLocaleString()}</td>
+              <td>{r.stories.toLocaleString()}</td>
+              <td>
+                {r.noPage.toLocaleString()} <span className="text-stone-400">({pct(r.noPage, r.stories)})</span>
+              </td>
+              <td>{r.noText.toLocaleString()}</td>
+              <td>
+                {r.emptyLedger.toLocaleString()} <span className="text-stone-400">({pct(r.emptyLedger, r.stories)})</span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
+  );
+}
+
 function StoriesPage() {
   const router = useRouter();
   const sp = useSearchParams();
@@ -50,7 +116,7 @@ function StoriesPage() {
     }
   }, [sp]);
   const [filter, setFilter] = useState<FilterClause[]>(initial);
-  const [sort, setSort] = useState(sp.get("sort") ?? "id");
+  const [sort, setSort] = useState(sp.get("sort") ?? "default");
   const [dir, setDir] = useState<"asc" | "desc">(sp.get("dir") === "desc" ? "desc" : "asc");
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState<Result | null>(null);
@@ -86,8 +152,8 @@ function StoriesPage() {
     load();
     const q = new URLSearchParams();
     if (filter.length) q.set("f", JSON.stringify(filter));
-    if (sort !== "id") q.set("sort", sort);
-    if (dir === "desc") q.set("dir", dir);
+    if (sort !== "default") q.set("sort", sort);
+    if (sort !== "default" && dir === "desc") q.set("dir", dir);
     router.replace(`/stories${q.size ? `?${q}` : ""}`, { scroll: false });
   }, [load, filter, sort, dir, router]);
 
@@ -130,6 +196,7 @@ function StoriesPage() {
           </p>
         </div>
       </div>
+      <CoveragePanel />
       <FilterBar fields={fields} filter={filter} onChange={changeFilter} count={data?.total ?? null} />
       <div className="flex flex-wrap items-center gap-2">
         <button className="btn-primary" disabled={selected.size === 0} onClick={() => setDialog("selected")}>
@@ -138,6 +205,25 @@ function StoriesPage() {
         <button className="btn" disabled={!data || data.total === 0} onClick={() => setDialog("filter")} title="Run every story that matches the filter (1 to 500)">
           Run the current filter ({data?.total.toLocaleString() ?? "…"})
         </button>
+        <span className="text-xs text-stone-500">
+          {sort === "default" ? (
+            "Order: newest job first, then rank."
+          ) : (
+            <>
+              Order: {fieldOf(sort)?.label ?? sort} {dir === "asc" ? "▲" : "▼"}.{" "}
+              <button
+                className="underline"
+                onClick={() => {
+                  setSort("default");
+                  setDir("asc");
+                  setOffset(0);
+                }}
+              >
+                Newest job first
+              </button>
+            </>
+          )}
+        </span>
         {selected.size > 0 && (
           <button className="text-xs text-stone-500 underline" onClick={() => setSelected(new Set())}>
             Clear selection
@@ -210,9 +296,12 @@ function StoriesPage() {
                           {id}
                         </Link>
                       ) : c === "story_headline" ? (
-                        <Link className="hover:underline" href={`/stories/${id}`}>
-                          {cell(r.storyHeadline ?? r.description, "text")}
-                        </Link>
+                        <>
+                          <Link className="hover:underline" href={`/stories/${id}`}>
+                            {cell(r.storyHeadline ?? r.description, "text")}
+                          </Link>
+                          {r.pageCount === 0 && <NoPagesBadge className="ml-1" />}
+                        </>
                       ) : (
                         cell(r[camel(c)], fieldOf(c)?.type)
                       )}
