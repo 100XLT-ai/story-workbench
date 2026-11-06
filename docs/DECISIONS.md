@@ -145,3 +145,11 @@ How the app shows it:
 - `test/scoring.test.ts` checks the copied cause-score, v1 recency tier, deal grade and confidence against longtale-core's 12 golden jobs (trimmed copies in `test/goldens/scoring/`).
 - The app adds no score of its own (P1). It labels the ranking score with its system everywhere ("weighted-grade@v2 score", "simple points").
 - Rejected: storing the explanations in a column. It needs a backfill script on the hosted database, and a request-time call over one page of rows is fast (two queries).
+
+**D49. The stories table uses TanStack Table and TanStack Virtual.** The same libraries and major versions as longtale-core's `packages/ui` (`@tanstack/react-table` 8.21.3, `@tanstack/react-virtual` 3.x; 9.x is out but longtale-core pins 8).
+- Sort and filter stay on the server, through the field registry (`manualSorting`), so the API, the Ask box and MCP see the same columns. TanStack holds the column definitions, the column groups (Story, Ranking, Sponsor and job, Evidence, Runnable), the visibility and the pinning.
+- Smooth scrolling over every row: the virtualizer renders only the visible rows (about 35) and loads them in chunks of 200 from `GET /api/stories` as you scroll. Pages of 50 rows with Previous and Next are gone.
+- Story id and headline (and the select box) are pinned on the left with `position: sticky`.
+- The **Scoring system** selector adds one column group per system (D48): each cell shows the score above the raw input, with a "differs" or "not stored" badge. The rows then load with `explain=1`. "Only stories it ranked" adds the `ranking_system` filter, because the ranking score means something else in each system (a weighted score, or the simple points).
+- Column visibility is saved per browser (`story-workbench:visibility-v2`); the older column list is not read.
+- Rejected: loading all 15,051 rows at once (several MB with the scoring explanations) and TanStack's client-side sorting (it would bypass the field registry).

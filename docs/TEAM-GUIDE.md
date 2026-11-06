@@ -180,7 +180,14 @@ plans the story and writes both options.
 ## Good to know
 
 - The **Stories** table shows the newest job first, then rank. Click a column
-  header to sort by it; click **Newest job first** to go back.
+  header to sort by it; click **Newest job first** to go back. Scroll down to
+  see every story: the table loads more rows as you go. Story id and headline
+  stay on the left when you scroll sideways. **Columns** shows or hides
+  columns, by group.
+- **Scoring system** above the table adds one column group for a ranking
+  system. Each cell shows the score, and under it the raw input (for example
+  the date and its age). Click **Only stories it ranked** to keep that
+  system's stories.
 - **Scores name their system.** Four ranking systems ranked the jobs over time.
   The **Ranking system** column says which one ranked a story, and the
   **Ranking score** is that system's score (a weighted score, or the simple

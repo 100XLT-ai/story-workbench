@@ -17,6 +17,8 @@
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
     "@neondatabase/serverless": "^1.2.0",
+    "@tanstack/react-table": "8.21.3",
+    "@tanstack/react-virtual": "^3.14.26",
     "diff": "^9.0.0",
     "drizzle-orm": "^0.45.4",
     "github-slugger": "2.0.0",
