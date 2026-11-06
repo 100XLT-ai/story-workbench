@@ -12,6 +12,7 @@ import {
   index,
   customType,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType: () => "bytea",
@@ -73,6 +74,13 @@ export const stories = pgTable(
     dealGrade: text("deal_grade"),
     confidence: text("confidence"),
     scoreComponents: jsonb("score_components"),
+    // why: the score parts are generated from score_components, so the field registry can sort and filter them like any column.
+    scoreAttribution: doublePrecision("score_attribution").generatedAlwaysAs(sql`(score_components ->> 'attribution')::double precision`),
+    scoreEvidenceCompleteness: doublePrecision("score_evidence_completeness").generatedAlwaysAs(sql`(score_components ->> 'evidenceCompleteness')::double precision`),
+    scoreBeneficiaryInterest: doublePrecision("score_beneficiary_interest").generatedAlwaysAs(sql`(score_components ->> 'beneficiaryInterest')::double precision`),
+    scoreAmount: doublePrecision("score_amount").generatedAlwaysAs(sql`(score_components ->> 'amount')::double precision`),
+    scoreRecency: doublePrecision("score_recency").generatedAlwaysAs(sql`(score_components ->> 'recency')::double precision`),
+    scoreAttendance: doublePrecision("score_attendance").generatedAlwaysAs(sql`(score_components ->> 'attendance')::double precision`),
     storyHeadline: text("story_headline"),
     storyAngle: text("story_angle"),
     description: text("description"),
@@ -93,6 +101,8 @@ export const stories = pgTable(
     marketName: text("market_name"),
     runDate: timestamp("run_date", { mode: "string" }),
     pageCount: integer("page_count").notNull(),
+    /** Pages of the story (the same page set as page_count) whose scraped text is not empty. */
+    textPageCount: integer("text_page_count").notNull().default(0),
     factCount: integer("fact_count").notNull(),
     quoteCount: integer("quote_count").notNull(),
     impactCount: integer("impact_count").notNull(),

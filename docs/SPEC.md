@@ -61,7 +61,7 @@ A **story** is one ranked cause candidate (`discovery_cause_candidates` row with
 
 A story is **runnable** by a workflow when it has the inputs that workflow reads:
 - **Production:** the fields that `armAPayload` reads (description, beneficiary, evidence quote, impact, organization). It does not read the story headline or the angle. Compute "runnable" from the fields that the payload cannot do without, and record the rule.
-- **v3:** at least one page, from `discovery_candidate_pages` **or** the candidate's `source_page_extract_id` (the harness falls back to it). Verified 2026-11-05: 139 of 283 winners have linked pages, 63 more have only `source_page_extract_id`, and 81 have no page.
+- **v3:** the story's own fact ledger is not empty (`fact_count + impact_count + quote_count > 0`), over its pages from `discovery_candidate_pages` **or** the candidate's `source_page_extract_id` (the harness falls back to it). The v3 writer reads only the ledger, never the raw page text (DECISIONS D42). Verified 2026-11-05: 139 of 283 winners have linked pages, 63 more have only `source_page_extract_id`, and 81 have no page. Of the 202 with a page, 177 have a ledger that is not empty; 15 have only a page that was never scraped, and 10 have a scraped page with nothing extracted.
 
 The table shows every ranked story. Filters "runnable by Production" and "runnable by v3" hide the others, and the team guide uses them.
 
@@ -84,9 +84,9 @@ Keep the source IDs. Add nothing that the source does not hold, except the deriv
 
 ### 2.4 Derived columns (computed by the import, fixed)
 
-Sponsor name, publisher name, run date, page count, fact count, quote count (quotes over the story's pages, after longtale-core's `dedupePages` and quote de-duplication), impact count, usable image count, newest page date, oldest page date, extractor versions, `has_angle`, `runnable_production`, `runnable_v3`.
+Sponsor name, publisher name, run date, page count, text page count (pages whose scraped text is not empty), fact count, quote count (quotes over the story's pages, after longtale-core's `dedupePages` and quote de-duplication), impact count, usable image count, newest page date, oldest page date, extractor versions, `has_angle`, `runnable_production`, `runnable_v3`.
 
-**Ranking as columns** (so people see "how it was ranked" and can filter on it): `rank`, `winner`, `weighted_score`, `total`, every `tier_*` field (`tier_impact`, `tier_recency`, `tier_reach`, `tier_evidence`, `tier_attribution`, `tier_market`, `tier_image`, as the source holds them), `tiebreak_reasoning`, `deal_grade`, `confidence`, and the score components. Use the columns that exist in the source; record any that do not.
+**Ranking as columns** (so people see "how it was ranked" and can filter on it): `rank`, `winner`, `weighted_score`, `total`, every `tier_*` field (`tier_impact`, `tier_recency`, `tier_reach`, `tier_evidence`, `tier_attribution`, `tier_market`, `tier_image`, as the source holds them), `tiebreak_reasoning`, `deal_grade`, `confidence`, and the score components (also one generated column per part: `score_attribution`, `score_evidence_completeness`, `score_beneficiary_interest`, `score_amount`, `score_recency`, `score_attendance`; DECISIONS D43). Use the columns that exist in the source; record any that do not.
 
 **Expected counts.** The import writes the count of every derived column (for example, how many stories have `quote_count` 0, 1, 2…) to `data/expected-counts.json` in the repo, computed from the source with longtale-core's own functions. AC-01 and AC-02 compare the app with this file.
 

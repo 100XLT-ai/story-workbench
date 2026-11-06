@@ -16,6 +16,7 @@ import pg from "pg";
 import postgres from "postgres";
 import { buildFactLedger } from "../src/lib/writer/ledger/fact-ledger";
 import { impactsFromCauseSignal, ledgerInputFor, type LoadedPage } from "../src/lib/writer/harness";
+import { hasText, runnableV3 } from "../src/lib/data/runnable";
 
 config({ path: ".env.local" });
 
@@ -204,6 +205,7 @@ async function main() {
       market_name: market,
       run_date: job?.created_at ?? null,
       page_count: pages.length,
+      text_page_count: pages.filter(hasText).length,
       fact_count: facts,
       quote_count: quotes,
       impact_count: impactsN,
@@ -213,7 +215,7 @@ async function main() {
       extractor_versions: [...new Set(rows.map((r) => r.extractor_version).filter(Boolean))].sort().join(", ") || null,
       has_angle: !!(c.story_angle as string | null)?.trim(),
       runnable_production: !!(c.description as string | null)?.trim() && !!sponsor,
-      runnable_v3: pages.length > 0,
+      runnable_v3: runnableV3({ factCount: facts, impactCount: impactsN, quoteCount: quotes }),
     });
     if (++n % 2000 === 0) console.log(`  ${n}/${candidates.length}`);
   }
@@ -243,8 +245,10 @@ async function main() {
     rank_3_or_5_and_quote_count_lte_1: storyRows.filter((r) => (r.rank === 3 || r.rank === 5) && Number(r.quote_count) <= 1).length,
     winners_quote_count_lte_1: storyRows.filter((r) => r.winner && Number(r.quote_count) <= 1).length,
     winners_runnable_v3_quote_count_lte_1: storyRows.filter((r) => r.winner && r.runnable_v3 && Number(r.quote_count) <= 1).length,
+    text_page_count_0: storyRows.filter((r) => r.text_page_count === 0).length,
+    winners_text_page_count_0: storyRows.filter((r) => r.winner && r.text_page_count === 0).length,
     distributions: Object.fromEntries(
-      ["rank", "page_count", "fact_count", "quote_count", "impact_count", "usable_image_count", "has_angle", "runnable_production", "runnable_v3", "winner", "publisher_name", "deal_grade", "confidence"].map((k) => [k, dist(k)]),
+      ["rank", "page_count", "text_page_count", "fact_count", "quote_count", "impact_count", "usable_image_count", "has_angle", "runnable_production", "runnable_v3", "winner", "publisher_name", "deal_grade", "confidence"].map((k) => [k, dist(k)]),
     ),
   };
   fs.writeFileSync("data/expected-counts.json", JSON.stringify(expected, null, 2) + "\n");

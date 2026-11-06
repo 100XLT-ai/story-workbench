@@ -40,6 +40,12 @@ export const STORY_FIELDS: StoryField[] = [
   { name: "tier_attribution", label: "Tier: attribution", type: "number", group: "ranking", description: "Ranking tier for attribution.", column: c.tierAttribution },
   { name: "tier_market", label: "Tier: market", type: "number", group: "ranking", description: "Ranking tier for market fit.", column: c.tierMarket },
   { name: "tier_image", label: "Tier: image", type: "number", group: "ranking", description: "Ranking tier for images.", column: c.tierImage },
+  { name: "score_attribution", label: "Score: attribution", type: "number", group: "ranking", description: "Score part from score_components.attribution: how clearly the pages credit the sponsor.", column: c.scoreAttribution },
+  { name: "score_evidence_completeness", label: "Score: evidence completeness", type: "number", group: "ranking", description: "Score part from score_components.evidenceCompleteness.", column: c.scoreEvidenceCompleteness },
+  { name: "score_beneficiary_interest", label: "Score: beneficiary interest", type: "number", group: "ranking", description: "Score part from score_components.beneficiaryInterest.", column: c.scoreBeneficiaryInterest },
+  { name: "score_amount", label: "Score: amount", type: "number", group: "ranking", description: "Score part from score_components.amount.", column: c.scoreAmount },
+  { name: "score_recency", label: "Score: recency", type: "number", group: "ranking", description: "Score part from score_components.recency.", column: c.scoreRecency },
+  { name: "score_attendance", label: "Score: attendance", type: "number", group: "ranking", description: "Score part from score_components.attendance.", column: c.scoreAttendance },
   { name: "deal_grade", label: "Deal grade", type: "text", group: "ranking", description: "Discovery's deal grade.", column: c.dealGrade },
   { name: "confidence", label: "Confidence", type: "text", group: "ranking", description: "Discovery's confidence.", column: c.confidence },
   { name: "tiebreak_reasoning", label: "Tiebreak reasoning", type: "text", group: "ranking", description: "Why the tiebreak chose the winner.", column: c.tiebreakReasoning },
@@ -49,6 +55,7 @@ export const STORY_FIELDS: StoryField[] = [
   { name: "domain", label: "Domain", type: "text", group: "sponsor", description: "The sponsor's web domain.", column: c.domain },
   { name: "run_date", label: "Run date", type: "date", group: "sponsor", description: "When discovery ran (the default generation date).", column: c.runDate },
   { name: "page_count", label: "Pages", type: "number", group: "evidence", description: "The story's pages (linked pages, else the source page).", column: c.pageCount },
+  { name: "text_page_count", label: "Text pages", type: "number", group: "evidence", description: "The story's pages with scraped text. 0 with pages > 0 means the pages were never scraped.", column: c.textPageCount },
   { name: "fact_count", label: "Facts", type: "number", group: "evidence", description: "Fact claims in the ledger, after de-duplication.", column: c.factCount },
   { name: "quote_count", label: "Quotes", type: "number", group: "evidence", description: "Quotes in the ledger, after de-duplication.", column: c.quoteCount },
   { name: "impact_count", label: "Impacts", type: "number", group: "evidence", description: "Impact claims in the ledger.", column: c.impactCount },
@@ -58,7 +65,7 @@ export const STORY_FIELDS: StoryField[] = [
   { name: "extractor_versions", label: "Extractor versions", type: "text", group: "evidence", description: "The page extractor versions.", column: c.extractorVersions },
   { name: "has_angle", label: "Has angle", type: "boolean", group: "evidence", description: "Discovery wrote an angle.", column: c.hasAngle },
   { name: "runnable_production", label: "Runnable by Production", type: "boolean", group: "runnable", description: "Has a description and a sponsor name, which the production payload needs.", column: c.runnableProduction },
-  { name: "runnable_v3", label: "Runnable by v3", type: "boolean", group: "runnable", description: "Has at least one page (linked or source page), which the v3 ledger needs.", column: c.runnableV3 },
+  { name: "runnable_v3", label: "Runnable by v3", type: "boolean", group: "runnable", description: "The story's own fact ledger is not empty (fact_count + impact_count + quote_count > 0). The v3 writer reads only the ledger, never the raw page text.", column: c.runnableV3 },
 ];
 
 export const FIELD_BY_NAME = new Map(STORY_FIELDS.map((f) => [f.name, f]));

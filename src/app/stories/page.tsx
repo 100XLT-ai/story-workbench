@@ -15,8 +15,20 @@ interface Result {
 }
 
 const camel = (s: string) => s.replace(/_([a-z])/g, (_m, c: string) => c.toUpperCase());
-const DEFAULT_COLS = ["id", "sponsor_name", "story_headline", "rank", "winner", "weighted_score", "quote_count", "fact_count", "page_count", "usable_image_count", "runnable_production", "runnable_v3", "publisher_name"];
+const DEFAULT_COLS = ["id", "sponsor_name", "story_headline", "rank", "winner", "weighted_score", "quote_count", "fact_count", "page_count", "text_page_count", "usable_image_count", "runnable_production", "runnable_v3", "publisher_name"];
 const PAGE = 50;
+/** Default columns added after people may have saved their own list: each is added once to a saved list. */
+const ADDED_DEFAULTS: { name: string; after: string }[] = [{ name: "text_page_count", after: "page_count" }];
+
+function withAddedDefaults(saved: string[], seen: string[]): string[] {
+  const out = [...saved];
+  for (const a of ADDED_DEFAULTS) {
+    if (seen.includes(a.name) || out.includes(a.name)) continue;
+    const at = out.indexOf(a.after);
+    out.splice(at < 0 ? out.length : at + 1, 0, a.name);
+  }
+  return out;
+}
 
 function cell(v: unknown, type: Field["type"] | undefined) {
   if (v === null || v === undefined || v === "") return <span className="text-stone-300">—</span>;
@@ -52,7 +64,9 @@ function StoriesPage() {
     api<{ fields: Field[] }>("/api/stories/fields").then((r) => setFields(r.fields));
     try {
       const c = localStorage.getItem("story-workbench:cols");
-      if (c) setCols(JSON.parse(c) as string[]);
+      const seen = JSON.parse(localStorage.getItem("story-workbench:cols-seen") ?? "[]") as string[];
+      if (c) setCols(withAddedDefaults(JSON.parse(c) as string[], seen));
+      localStorage.setItem("story-workbench:cols-seen", JSON.stringify(ADDED_DEFAULTS.map((a) => a.name)));
     } catch {
       /* ignore */
     }

@@ -19,6 +19,8 @@ Rules:
 - "no quotes" means quote_count eq 0. "one quote or none" means quote_count lte 1.
 - "rank 3 or 5" means rank in [3,5].
 - "runnable by v3" means runnable_v3 eq true. "runnable by production" means runnable_production eq true.
+- "never scraped" or "no page text" means text_page_count eq 0 and page_count gt 0. "no page" means page_count eq 0.
+- A score part ("attribution score", "recency score") goes to the score_* field. A tier goes to the tier_* field.
 - A sponsor name goes to sponsor_name contains. A publisher goes to publisher_name contains.
 - Use only the fields above. If a part of the request has no field, leave it out and say so in the explanation.`;
 

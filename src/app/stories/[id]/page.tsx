@@ -30,6 +30,7 @@ interface Story {
   pages: Page[];
   images: Obj[];
   runs: { runId: number; runStoryId: number; version: string; status: string; cost: number; createdAt: string }[];
+  v3: { runnable: boolean; reason: string | null; recrawlUrls: string[] };
 }
 
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
@@ -45,6 +46,132 @@ function KV({ data, keys }: { data: Obj; keys: [string, string][] }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+const SCORE_PARTS: [string, string][] = [
+  ["attribution", "Attribution"],
+  ["evidenceCompleteness", "Evidence completeness"],
+  ["beneficiaryInterest", "Beneficiary interest"],
+  ["amount", "Amount"],
+  ["recency", "Recency"],
+  ["attendance", "Attendance"],
+];
+const TIERS: [string, string][] = [
+  ["tierImpact", "Impact"],
+  ["tierRecency", "Recency"],
+  ["tierReach", "Reach"],
+  ["tierEvidence", "Evidence"],
+  ["tierAttribution", "Attribution"],
+  ["tierMarket", "Market"],
+  ["tierImage", "Image"],
+];
+const n = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+const fmt = (v: number | null) => (v === null ? "—" : Number.isInteger(v) ? String(v) : v.toFixed(2));
+
+/** The page-text warning, or null. */
+function textWarning(st: Obj): string | null {
+  if (n(st.pageCount) === 0) return "This story has no page, so the writer has no source text.";
+  if (n(st.textPageCount) === 0)
+    return n(st.pageCount) === 1 ? "This story's page was never scraped, so the writer has no source text." : "This story's pages were never scraped, so the writer has no source text.";
+  return null;
+}
+
+function WhyRank({ st, v3 }: { st: Obj; v3: Story["v3"] }) {
+  const parts = (st.scoreComponents ?? {}) as Obj;
+  const total = n(st.total);
+  const warning = textWarning(st);
+  const counts: [string, unknown][] = [
+    ["Pages", st.pageCount],
+    ["Text pages", st.textPageCount],
+    ["Facts", st.factCount],
+    ["Impacts", st.impactCount],
+    ["Quotes", st.quoteCount],
+  ];
+  return (
+    <section className="card p-3" aria-labelledby="why-rank">
+      <h2 id="why-rank" className="mb-2 font-semibold">
+        Why this rank
+      </h2>
+      {(warning || v3.reason) && (
+        <div className="mb-3 space-y-1 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900">
+          {warning && <p className="font-medium">{warning}</p>}
+          {v3.reason && <p>Not runnable by v3: {v3.reason}. The v3 writer reads only the facts, impacts and quotes of the story&apos;s pages.</p>}
+          {v3.reason && v3.recrawlUrls.length > 0 && (
+            <p>
+              The thin-story re-crawl in the Staged and One-call seeds can still add {v3.recrawlUrls.length} other page{v3.recrawlUrls.length === 1 ? "" : "s"} of the job: {v3.recrawlUrls.join(", ")}.
+            </p>
+          )}
+        </div>
+      )}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div>
+          <div className="flex items-baseline gap-4">
+            <div>
+              <div className="label">Weighted score</div>
+              <div className="text-2xl font-semibold">{fmt(n(st.weightedScore))}</div>
+            </div>
+            <div>
+              <div className="label">Total</div>
+              <div className="text-2xl font-semibold">{fmt(total)}</div>
+            </div>
+            <div>
+              <div className="label">Rank</div>
+              <div className="text-2xl font-semibold">{s(st.rank)}</div>
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2 text-sm">
+            <span className="chip">deal grade {s(st.dealGrade)}</span>
+            <span className="chip">confidence {s(st.confidence)}</span>
+          </div>
+          <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs">
+            {counts.map(([label, v]) => (
+              <div key={label} className={`rounded border p-1 ${v === 0 ? "border-amber-300 bg-amber-50" : "border-stone-200"}`}>
+                <div className="text-stone-500">{label}</div>
+                <div className="text-sm font-semibold">{s(v)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="label mb-1">Score parts (the total is their sum)</div>
+          <table className="w-full text-sm">
+            <tbody>
+              {SCORE_PARTS.map(([k, label]) => {
+                const v = n(parts[k]);
+                const pct = v !== null && total ? Math.max(0, Math.min(100, (v / total) * 100)) : 0;
+                return (
+                  <tr key={k}>
+                    <td className="w-40 py-0.5 pr-2 text-stone-600">{label}</td>
+                    <td className="py-0.5">
+                      <div className="h-2.5 w-full rounded bg-stone-100" title={`${pct.toFixed(0)}% of the total`}>
+                        <div className="h-2.5 rounded bg-blue-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    </td>
+                    <td className="w-14 py-0.5 pl-2 text-right tabular-nums">{fmt(v)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div className="label mb-1">Tiers</div>
+          <div className="grid grid-cols-4 gap-1 text-center text-xs">
+            {TIERS.map(([k, label]) => (
+              <div key={k} className="rounded border border-stone-200 p-1">
+                <div className="text-stone-500">{label}</div>
+                <div className="text-sm font-semibold">{s(st[k])}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="mt-3">
+        <div className="label mb-1">Tiebreak reasoning</div>
+        {st.tiebreakReasoning ? <p className="whitespace-pre-wrap text-sm">{s(st.tiebreakReasoning)}</p> : <p className="text-sm text-stone-500">No tiebreak reasoning for this story.</p>}
+      </div>
+    </section>
   );
 }
 
@@ -125,13 +252,14 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
             <span className="chip">rank {s(st.rank)}</span>
             {st.winner ? <span className="chip border-emerald-300 bg-emerald-50">winner</span> : null}
             <span className="chip">{st.runnableProduction ? "runnable by Production" : "not runnable by Production"}</span>
-            <span className="chip">{st.runnableV3 ? "runnable by v3" : "not runnable by v3"}</span>
+            <span className={`chip ${data.v3.runnable ? "" : "border-amber-300 bg-amber-50"}`}>{data.v3.runnable ? "runnable by v3" : `not runnable by v3: ${data.v3.reason ?? "its ledger is empty"}`}</span>
           </div>
         </div>
         <button className="btn-primary" onClick={() => setDialog(true)}>
           Run this story…
         </button>
       </div>
+      <WhyRank st={st} v3={data.v3} />
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="card p-3">
           <h2 className="mb-2 font-semibold">Sponsor settings (the writer&apos;s inputs)</h2>
@@ -177,7 +305,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           )}
         </div>
         <div className="card p-3">
-          <h2 className="mb-2 font-semibold">Candidate fields and scores</h2>
+          <h2 className="mb-2 font-semibold">Candidate fields</h2>
           <KV
             data={{ ...st, attribution: raw.attribution, amount: raw.amount, signal_date: raw.signal_date }}
             keys={[
@@ -192,19 +320,8 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
               ["ideaDescription", "Idea summary (Story.summary)"],
               ["attribution", "Attribution"],
               ["signal_date", "Signal date"],
-              ["weightedScore", "Weighted score"],
-              ["total", "Total"],
-              ["tierImpact", "Tier: impact"],
-              ["tierRecency", "Tier: recency"],
-              ["tierReach", "Tier: reach"],
-              ["tierEvidence", "Tier: evidence"],
-              ["tierAttribution", "Tier: attribution"],
-              ["tierMarket", "Tier: market"],
-              ["tierImage", "Tier: image"],
-              ["dealGrade", "Deal grade"],
-              ["confidence", "Confidence"],
-              ["tiebreakReasoning", "Tiebreak reasoning"],
               ["pageCount", "Pages"],
+              ["textPageCount", "Pages with text"],
               ["factCount", "Facts (ledger)"],
               ["quoteCount", "Quotes (ledger)"],
               ["impactCount", "Impacts (ledger)"],
@@ -259,7 +376,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           {data.pages.map((p) => (
             <PageCard key={p.id} p={p} />
           ))}
-          {data.pages.length === 0 && <p className="text-sm text-stone-500">This story has no page, so v3 cannot run it.</p>}
+          {data.pages.length === 0 && <p className="text-sm text-stone-500">This story has no page, so the writer has no source text.</p>}
         </div>
       </div>
       <div>

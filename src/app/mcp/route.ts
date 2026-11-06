@@ -73,7 +73,7 @@ const handler = createMcpHandler(
       async (a) =>
         wrap(async () => {
           const r = await findStories({ filter: a.filter ?? [], sort: a.sort, dir: a.dir, limit: a.limit ?? 20, offset: a.offset });
-          return { total: r.total, offset: r.offset, rows: r.rows.map((x) => ({ id: x.id, job_id: x.jobId, sponsor: x.sponsorName, rank: x.rank, winner: x.winner, headline: x.storyHeadline, quote_count: x.quoteCount, fact_count: x.factCount, page_count: x.pageCount, runnable_production: x.runnableProduction, runnable_v3: x.runnableV3 })) };
+          return { total: r.total, offset: r.offset, rows: r.rows.map((x) => ({ id: x.id, job_id: x.jobId, sponsor: x.sponsorName, rank: x.rank, winner: x.winner, weighted_score: x.weightedScore, headline: x.storyHeadline, quote_count: x.quoteCount, fact_count: x.factCount, page_count: x.pageCount, text_page_count: x.textPageCount, runnable_production: x.runnableProduction, runnable_v3: x.runnableV3 })) };
         }),
     );
     server.registerTool(
