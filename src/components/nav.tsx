@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/runs", label: "Runs" },
   { href: "/settings", label: "Settings" },
   { href: "/connect", label: "Connect Claude" },
+  { href: "/guide", label: "Guide" },
 ];
 
 export function Nav() {

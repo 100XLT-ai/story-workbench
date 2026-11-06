@@ -107,6 +107,13 @@ function StoriesPage() {
         <div>
           <h1 className="text-xl font-semibold">Stories</h1>
           <p className="text-sm text-stone-600">Every ranked story from the fixed copy of longtale_dv2. Filter, select, then run a writer version.</p>
+          <p className="text-xs text-stone-500">
+            New here?{" "}
+            <Link href="/guide" className="text-blue-700 hover:underline">
+              Read the guide
+            </Link>
+            .
+          </p>
         </div>
       </div>
       <FilterBar fields={fields} filter={filter} onChange={changeFilter} count={data?.total ?? null} />
