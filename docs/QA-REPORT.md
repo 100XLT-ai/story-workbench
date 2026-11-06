@@ -1,48 +1,71 @@
 # QA report: self-check (build session)
 
-Date: 2026-11-05. Checked by the build session, not by an independent reviewer.
+Date: 2026-11-06. Checked by the build session, not by an independent reviewer.
 
-**Where.** The hosted database does not exist yet (the Neon terms need a
-person; see `docs/STATUS.md`). So every test below ran on the **local** app
-(`http://localhost:3100`, `next dev`, local Postgres with the same import, the
-real OpenRouter key, Vercel Workflow's local world). The live URL builds and
-deploys, but answers 503 "database not connected" until the database exists.
-After the database step, the tests marked "repeat live" must run again on
-`https://story-workbench-longtale-hq.vercel.app`.
+**Where.** Every test below ran on the **live** app,
+`https://story-workbench-longtale-hq.vercel.app` (Vercel production, Neon
+Postgres, Vercel Workflow), unless the row says otherwise. The first pass on
+2026-11-05 ran on the local app (`http://localhost:3100`). Its evidence is in
+the git history of this file (commit 1594ced).
 
-| AC | Result (local) | Evidence |
+Live runs made by this check: 1 to 10 (author "QA live" or "mcp-smoke").
+Live versions made by this check: 3.1 (mcp-smoke), 3.2, 3.3, 3.4, 3.5 (QA live).
+
+| AC | Result | Evidence (live unless marked) |
 |---|---|---|
-| AC-01 | pass | `GET /api/stories?limit=1` total 15,051; filter `winner eq true` → 283; `story_headline not_null` → 1,144; all equal `data/expected-counts.json`. |
-| AC-02 | pass | `rank in [3,5] and quote_count lte 1` → 458 = `expected-counts.json` `rank_3_or_5_and_quote_count_lte_1`. The counts come from longtale-core's own `buildFactLedger` (D9). |
-| AC-03 | pass | `/stories/15157` (job 1104 winner): pages 32106, 32145, 32104, 32127 with facts 5/5/5/5, quotes 5/2/1/5, impacts 7/3/12/8, dates 2026-10-15, 2024-07-17, 2024-06-06, 2023-10-09, 2 images; the same as a SELECT on `longtale_dv2`. |
-| AC-04 | pass | Story 1918, Staged 3.0, runs 2 and 9: the `label` messages have the same SHA-256 (a7c9a442…). Unit test "code steps are deterministic". |
-| AC-05 | pass | `/workflows`: Production writer 1.0 (30 steps), Staged writer 3.0 (39), One-call writer 3.0 (38); each ends with Facebook, Instagram, LinkedIn and X steps, then the ad copy steps. |
-| AC-06 | pass | `pnpm test`: 12 of 12 fidelity tests (3 seeds × jobs 1104, 1100, 1107, 1099), messages and settings equal to longtale-core's builders. |
-| AC-06b | pass, with D26 | Run 1 (Staged 3.0, story 14807): article "STCU Gives School Supplies at Unity Event" (334 words), 4 posts, ad "STCU Sponsors 32nd Annual Unity in the Community" / subheadline / CTA "Support Local Events". The social steps read `article ← #17` (the run's own article) in the flow. The ad steps read the story summary, as production does (D26). |
-| AC-07 | pass | Run 1: 39 traces, each with prompt (model steps), input, output, tokens and cost. |
-| AC-08 | pass | `/flow/1`: one card per step, connectors named by context values, readable views for story type, selection, plan (paragraph by paragraph with claim texts), article, checks, posts and ad. |
-| AC-09 | pass | Run 5 (Production 1.0, story 14807): `statistics` "skipped: needs story.impactValueRaw is empty (value: 30000)"; `headline_shorten` "skipped: needs title_check.over_limit is true (value: false)". Job 1099 golden shows `statistics` running. |
-| AC-10 | pass | Run 7: 50 stories, all 50 in the table; 23 done; 27 failed, each "parse: writer output has no article body" (the writer refuses stories with no usable facts, as production would). The run went on with no browser open. |
-| AC-11 | pass (local); repeat live | Run 2, story 1918: the `write` call took 126.4 s and completed. Run 3 (job 1099 story, `write` effort high, 16384) took 22.7 s. On Vercel each model call is its own workflow step (max duration 300 s on Hobby). |
-| AC-12 | pass | The run dialog shows the estimate before the start; run page shows real cost per story and per run (run 7: estimate $7.25, real $2.26). |
-| AC-13 | pass | Run 1: `results?format=csv` (5 KB), `md` (5 KB), `json` (1.4 MB, every trace), each with `Content-Disposition: attachment`. |
-| AC-14 | pass | Browser, name "Noah": edit of `write` → save dialog with diff → "Staged writer 3.1 (Noah)", parent 3.0, note "Shorter headlines: 10 words or fewer". 3.0 unchanged (versions are immutable rows). |
-| AC-15 | pass | Comment "Headlines must be 8 words or fewer" on 3.0 → proposal changed the `write` system prompt ("6 to 10 words" → "8 words or fewer") with a reason → saved as "Staged writer 3.3 (Noah)" with the comment as note (3.2 was taken by the AC-11 test version locally). |
-| AC-16 | pass | `POST /api/versions` with `{{nope}}` → 422 "the token {{nope}} in the user prompt is unknown". The editor marks the token red. |
-| AC-17 | pass | Version 3.4 adds "Extra social post" after "Final article" (reads `article`, writes `social_post`); run 4 shows it in the flow and in the results table. |
-| AC-18 | pass | `/compare?a=1&b=6` (3.0 vs 3.1, story 14807): 23 of 39 steps differ, changed words marked red and green. |
-| AC-19 | pass | `/versions/4`: View as JSON; Download JSON → `Staged-writer-3.1-Noah.json`. |
-| AC-20 | pass | 19 endpoints answer 200 with no login; `/api/openapi.json` passes `swagger-cli validate`. |
-| AC-21 | partial (local) | `claude mcp add --transport http story-workbench http://localhost:3100/mcp` → `claude mcp list`: ✓ Connected. Claude Code cannot run tools inside the build session (it refuses nested sessions, D41), so `scripts/mcp-smoke.ts ac21` ran the same calls: 16 tools, `query_stories` (total 122), `start_run` (run 2), `get_run` until done, `get_trace` (39 steps). The QA session should repeat it in Claude Code. |
-| AC-22 | pass (local) | `scripts/mcp-smoke.ts ac22`: `create_version` "Staged writer 3.5 (mcp-smoke)" (1 changed field), runs 8 and 9 on 3 stories, `compare_traces` lists the steps that differ. |
-| AC-23 | pass (live) | On https://story-workbench-longtale-hq.vercel.app/mcp: `initialize` (server story-workbench), `tools/list` (16 tools) and `resources/read workbench://guide` over plain HTTP with no login; `/.well-known/oauth-protected-resource` → 404 (not 401). |
-| AC-24 | pass | No page, route or MCP tool checks a login or a token; there is no middleware. |
-| AC-25 | pass (repo, build); repeat live logs | The key value and its prefix: 0 hits in tracked files, 0 in git history, 0 in `.next`. |
-| AC-26 | pass | The runtime talks only to its own Postgres, OpenRouter and OpenRouter's model list. No longtale-core host or database string is in `src/`. |
+| AC-01 | pass | `/api/stories` total 15,051; `winner eq true` → 283; `story_headline not_null` → 1,144. All equal `data/expected-counts.json`. |
+| AC-02 | pass | `rank in [3,5] and quote_count lte 1` → 458 = `rank_3_or_5_and_quote_count_lte_1`. |
+| AC-03 | pass | `/api/stories/15157`: pages 32106, 32145, 32104, 32127 with facts 5/5/5/5 and quotes 5/2/1/5; 2 images. The same as the local check against `longtale_dv2`. |
+| AC-04 | pass | Story 1918, runs 3, 5 and 8: the `label` messages have the same SHA-256 (a7c9a442…), and the `writer_input` output too (8f9ce8c7…). Local runs gave the same label SHA. |
+| AC-05 | pass | `/api/versions`: Production writer 1.0 (30 steps), Staged writer 3.0 (39), One-call writer 3.0 (38). |
+| AC-06 | pass (CI) | `pnpm test`: 12 of 12 fidelity tests. CI passes on GitHub Actions. |
+| AC-06b | pass, with D26 | Run 1 (Staged 3.0, story 14807): article "Spokane families get school and culture aid" (261 words), 4 posts, ad copy. `social_data`: "Social posts use the title … and this run's article". The ad steps read the story summary, as production does (D26). |
+| AC-07 | pass | Run 1: 39 traces, each with a body (prompt for model steps, input, output, tokens, cost). |
+| AC-08 | pass | `/flow/1`: one card per step with the Decided line, connectors and readable views (screenshot checked). |
+| AC-09 | pass | Run 2 (Production 1.0, story 14807): `statistics` "skipped: needs story.impactValueRaw is empty (value: 30000)"; `headline_shorten` "skipped: needs title_check.over_limit is true (value: false)"; `short_title` and `social_facebook_retry` skipped with reasons. |
+| AC-10 | pass | Run 4: 50 stories, all 50 in the table. 27 done, 23 failed, each "writer output has no article body". The run ended with no browser open. Note: this run took the 50 winners with the **fewest** facts (a wrong sort parameter in the test call), so the refusals are expected (see Findings). |
+| AC-11 | pass | Run 8 (version 3.2, the `write` step on Opus 4.6 with reasoning high, story 1918): the `write` call took **140.6 s** and completed. Each model call is its own workflow step on Vercel. |
+| AC-12 | pass | The run dialog shows the estimate before the start ($0.19 for 3 stories). Run 4: estimate $14.70, real $2.18. The estimate is high on purpose: it counts every conditional step as if it runs, and 23 stories failed before the social and ad steps. |
+| AC-13 | pass | Run 1: `results?format=csv`, `md`, `json`: 200, each with `Content-Disposition: attachment; filename="run-1.<ext>"`. |
+| AC-14 | pass | Browser, name "QA live": editor → `write` temperature 0.7 → 0.5 → save dialog shows only `write · temperature` → saved "Staged writer 3.4 (QA live)", parent 3.0, note "Cooler writer: temperature 0.5". The stored value is the number 0.5. |
+| AC-15 | pass | Browser: comment "Headlines must be 8 words or fewer" on 3.0 → the prompt editor (Opus 4.6) changed "6 to 10 words" to "8 words or fewer" in the `write` system prompt, with a reason → "Save as a new version" → "Staged writer 3.3 (QA live)", note = the comment. |
+| AC-16 | pass | `POST /api/versions` with `{{nope}}` → 422 "step 12 "write": the token {{nope}} in the user prompt is unknown." |
+| AC-17 | pass | Version 3.5 inserts "Extra social post" after `fit_title` (reads `article`, writes `social_post`). Run 10: the step wrote a 262-character post; the run page shows it as "POST"; the CSV has a `social_post` column (added in 084dd17). |
+| AC-18 | pass | `/compare?a=3&b=61` (3.0 vs 3.2, story 1918): "Only steps that differ (26 of 39)", changed words red and green. |
+| AC-19 | pass | `/api/versions/7/export` → `Staged-writer-3.4-QA-live.json` as an attachment. The version page has View as JSON and Download JSON. |
+| AC-20 | pass | 19 GET endpoints answer 200 with no login. The live `/api/openapi.json` passes `swagger-cli validate`. |
+| AC-21 | pass, with one limit | `claude mcp add --transport http story-workbench-live https://story-workbench-longtale-hq.vercel.app/mcp` → `claude mcp list`: "✓ Connected". The tool calls ran through `scripts/mcp-smoke.ts ac21` against the live `/mcp`: 16 tools, `query_stories` (total 122), `start_run` (run 5), `get_run` until done, `get_trace` (39 steps). Limit: Claude Code does not start inside the build session (D41), so no person typed the request into Claude Code. |
+| AC-22 | pass | `scripts/mcp-smoke.ts ac22` on live: `create_version` "Staged writer 3.1 (mcp-smoke)" (1 changed field), child run 6 and parent run 7 on 3 stories, `compare_traces` lists the steps that differ. |
+| AC-23 | pass | `initialize` (server story-workbench), `tools/list` (16), `resources/read workbench://guide` over plain HTTP with no login; `/.well-known/oauth-protected-resource` → 404. |
+| AC-24 | pass | No page, route or MCP tool checks a login or a token. |
+| AC-25 | pass | The key and its first 12 characters: 0 hits in 1.8 MB of live pages, API replies (settings, health, runs, the JSON export) and JS bundles; 0 hits in the live runtime logs (Hobby keeps 30 minutes); 0 in tracked files, git history and `.next` (first pass). |
+| AC-26 | pass | The runtime talks only to its own Postgres (Neon), OpenRouter and OpenRouter's model list. |
 | AC-27 | pass | `README.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/TEAM-GUIDE.md`, `docs/SPEC.md`. |
-| AC-28 | pass | GitHub Actions run for 175d852: type-check, lint, unit tests and the fidelity test pass (the first two runs failed on generated route types; fixed). |
-| AC-29 | pass (local, by the builder) | The tour clicks work: Winners, Runnable by v3, quote_count ≤ 1 → 122; Facts header; 3 rows; Run with…; Staged 3.0; flow. A first-time reader must still time it (QA). |
-| AC-30 | pass | At 1280 × 800, `scrollWidth == clientWidth` on /stories, /stories/15157, /workflows, /versions/2, /versions/2/edit, /runs, /runs/7, /flow/1, /compare, /settings, /connect. The table pages 50 rows at a time. |
-| AC-31 | pass | Ask "rank 3 or 5, no quotes" → chips `rank in [3,5]`, `quote_count eq 0`, count 403; the API with the same filter → 403. |
+| AC-28 | pass | GitHub Actions: type-check, lint, unit tests and the fidelity test pass. |
+| AC-29 | pass (by the builder) | Live tour: name → Winners → Runnable by v3 → quote_count ≤ 1 → "122 stories match" → Facts header (desc) → 3 rows → Run with… → Staged 3.0, estimate $0.19 → run 9. A first-time reader must still time it. |
+| AC-30 | pass | At 1280 × 800, `scrollWidth == clientWidth` on /stories, /stories/15157, /workflows, /versions/2, /versions/2/edit, /runs, /runs/1, /runs/4, /flow/1, /compare, /settings, /connect. |
+| AC-31 | pass | Ask "rank 3 or 5, no quotes" → filter `rank in [3,5]`, `quote_count eq 0`, count 403; the API with the same filter → 403. |
 
-Model spend in these checks: about $2.89 (app runs and prompt-editor calls) plus about $1.10 to record the goldens.
+## Findings
+
+1. **Writer refusals on thin stories (expected).** In run 4, 23 of 50 stories
+   failed at `parse`. The trace of story 1927 shows 0 facts in the ledger. The
+   select and write models return empty plans, and the writer's
+   `short_reason` says why ("…contains no facts…"). Since 084dd17 the error
+   in the run table adds that reason.
+2. **Label call cut at the token limit (production rule).** Run 9, story 3399
+   (13 facts, plus 2 re-crawled pages): `label_recrawl` had 204 facts to label.
+   The reply was cut at 8,192 tokens, retried once at 16,384 (the ported
+   production recovery rule), and was cut again. The story failed with
+   "output truncated (finish_reason=length)". A version with a larger
+   `maxTokens` on that step avoids it.
+3. **Fixed in 084dd17.** `POST /api/versions/preview` without `parent_id`
+   answered 500; it now answers 400.
+
+## Model spend
+
+- This live check: $3.29 in runs (Settings → Model spend), plus one
+  prompt-editor call and one Ask call that the figure does not count (about
+  $0.30, estimated).
+- First pass (local): about $2.89, plus about $1.10 to record the goldens.
+- Total: about $7.60.

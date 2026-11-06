@@ -62,9 +62,11 @@ cd <story-workbench> && pnpm exec tsx scripts/export-fixture-inputs.ts
 
 Vercel project `story-workbench` in the team "Longtale" (`longtale-hq`). A push
 to `main` deploys production. Environment variables: `OPENROUTER_API_KEY`
-(set), and `DATABASE_URL` from the Neon integration. To load the hosted
-database, run `pnpm db:migrate`, `pnpm run import` and `pnpm seed` with
-`DATABASE_URL` (and `IMPORT_DATABASE_URL` for the import) set to the Neon URL.
+(set), and `DATABASE_URL` from the Neon integration (`story-workbench-db`,
+one database for all environments). The hosted database was loaded with
+`pnpm db:migrate`, `scripts/copy-snapshot.sh` (from a local import) and
+`pnpm seed`; see `docs/STATUS.md`. `vercel env pull` puts the Neon URL in
+`.env.local`, so local dev then uses the hosted database.
 
 ## Import again
 
